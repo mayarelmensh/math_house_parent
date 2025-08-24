@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/utils/app_colors.dart';
 
-class CustomTextFormField extends StatefulWidget {
+class CustomTextFormField extends StatefulWidget{
   Color? filledColor;
   Color borderColor;
   TextStyle? hintStyle;
@@ -37,7 +36,7 @@ class CustomTextFormField extends StatefulWidget {
     this.keyboardType = TextInputType.text,
     this.borderColor = AppColors.white,
     this.readonly = false,
-    this.onChanged
+    this.onChanged,
   });
 
   @override
@@ -65,13 +64,16 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
         prefixIcon: widget.prefixIcon,
         suffixIcon: widget.isPassword
             ? IconButton(
-            onPressed: () {
-              widget.isObscureText = !widget.isObscureText;
-              setState(() {});
-            },
-            icon: Icon(widget.isObscureText
-                ? Icons.visibility_off
-                : Icons.visibility))
+                onPressed: () {
+                  widget.isObscureText = !widget.isObscureText;
+                  setState(() {});
+                },
+                icon: Icon(
+                  widget.isObscureText
+                      ? Icons.visibility_off
+                      : Icons.visibility,
+                ),
+              )
             : widget.suffixIcon,
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
@@ -82,11 +84,13 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
           borderSide: BorderSide(color: widget.borderColor, width: 1),
         ),
         errorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: const BorderSide(color: AppColors.red)),
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: AppColors.red),
+        ),
         focusedErrorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: const BorderSide(color: AppColors.red)),
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: AppColors.red),
+        ),
       ),
     );
   }
