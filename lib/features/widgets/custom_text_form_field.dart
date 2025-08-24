@@ -18,6 +18,7 @@ class CustomTextFormField extends StatefulWidget {
   bool isPassword;
   TextStyle? textStyle;
   bool readonly;
+  final Function(String)? onChanged;
 
   CustomTextFormField({
     super.key,
@@ -36,6 +37,7 @@ class CustomTextFormField extends StatefulWidget {
     this.keyboardType = TextInputType.text,
     this.borderColor = AppColors.white,
     this.readonly = false,
+    this.onChanged
   });
 
   @override
@@ -46,7 +48,7 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
-
+      onChanged: widget.onChanged,
       style: widget.textStyle,
       obscureText: widget.isObscureText,
       keyboardType: widget.keyboardType,

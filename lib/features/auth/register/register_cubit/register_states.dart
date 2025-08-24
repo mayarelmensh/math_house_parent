@@ -1,7 +1,7 @@
 import 'package:math_house_parent/core/errors/failures.dart';
 import 'package:math_house_parent/domain/entities/register_response_entity.dart';
 
-class RegisterStates{}
+abstract class RegisterStates{}
 class RegisterInitialState extends RegisterStates{}
 class RegisterLoadingState extends RegisterStates{}
 class RegisterErrorState extends RegisterStates{

@@ -21,7 +21,6 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> {
    RegisterCubit registerCubit = getIt<RegisterCubit>();
 
-
   @override
   void dispose() {
     registerCubit.close();
@@ -34,24 +33,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
       bloc: registerCubit,
       listener: (context, state) {
         if (state is RegisterLoadingState) {
-          DialogUtils.showLoading(context: context,  msg: 'Loading...');
+          DialogUtils.showLoading(context: context,  message:  'Loading...');
         } else if (state is RegisterErrorState) {
-          DialogUtils.hideLoading(context: context);
-          DialogUtils.showMsg(
+          DialogUtils.hideLoading(context);
+          DialogUtils.showMessage(
             context: context,
-            msg: state.errors.errorMsg,
+           message:  state.errors.errorMsg,
             title: 'Error',
             posActionName: 'Ok',
           );
         } else if (state is RegisterSuccessState) {
-          DialogUtils.hideLoading(context: context);
-          DialogUtils.showMsg(
+          DialogUtils.hideLoading( context);
+          DialogUtils.showMessage(
             context: context,
-            msg: 'Register successfully.',
+            message: 'Register successfully.',
             title: 'Success',
             posActionName: 'Ok',
             posAction: () {
-              Navigator.of(context).pushReplacementNamed(AppRoutes.loginRoute);
+              Navigator.of(context).pushReplacementNamed(AppRoutes.homeRoute);
             },
           );
         }
@@ -74,7 +73,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     child: Text(
                       'Math House',
                       style: TextStyle(
-                        fontSize: 20.sp,
+                        fontSize: 30.sp,
                         fontWeight: FontWeight.bold,
                         color: AppColors.primaryColor,
                       ),
@@ -189,7 +188,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                               // Re-Password Field
                               Text(
-                                "Re-Password",
+                                "Confirm Password",
                                 style: TextStyle(
                                   fontSize: 18.sp,
                                   fontWeight: FontWeight.w500,
@@ -200,7 +199,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               CustomTextFormField(
                                 borderColor: AppColors.darkGrey,
                                 controller: registerCubit.confPassword,
-                                hintText: "Enter your re-password",
+                                hintText: "repeat your password",
                                 isObscureText:  !(registerCubit.passwordVisibility["rePassword"] ?? false),
                                 validator: (value) =>
                                     AppValidators.validateConfirmPassword(
@@ -248,11 +247,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                         child: Text(
                                           textAlign: TextAlign.center,
                                           overflow: TextOverflow.ellipsis,
-                                          'Already have an account? Login',
+                                          'Already have an account?',
                                           style: TextStyle(
                                             fontSize: 18.sp,
                                             fontWeight: FontWeight.w500,
-                                            color: AppColors.white,
+                                            color: AppColors.primaryColor,
                                             decoration: TextDecoration
                                                 .underline,
                                             decorationColor: AppColors.white,

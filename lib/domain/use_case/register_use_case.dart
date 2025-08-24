@@ -11,4 +11,6 @@ Future<Either<Failures,RegisterResponseEntity>> invoke(String name , String emai
    String phone , String password, String confPassword){
   return authRepository.register( name ,email,phone , password , confPassword );
  }
+
+
 }
