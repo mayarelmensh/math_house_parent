@@ -12,13 +12,15 @@ class LoginCubit extends Cubit<LoginStates>{
   TextEditingController password=TextEditingController();
   var formKey=GlobalKey<FormState>();
   bool isPasswordObscure =false;
+  bool isLoading= false;
+
  void login()async{
    if(formKey.currentState?.validate()==true) {
      emit(LoginInitialState());
      var either = await loginUseCase.invoke(email.text, password.text);
      return either.fold((error) {
       emit(LoginErrorState(errors: error));
-     },  (response)  async{
+     },  (response)  async {
        await SharedPreferenceUtils.saveData(
          key: 'token',
          value: response.token,
@@ -34,4 +36,8 @@ class LoginCubit extends Cubit<LoginStates>{
    emit( ChangePasswordVisibilityState());
   }
 
+  void setLoading(bool loading) {
+    isLoading = loading;
+
+  }
 }

@@ -8,6 +8,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool showAddIcon;
   final List<Widget>? actions;
 
+
   const CustomAppBar({
     super.key,
     required this.title,

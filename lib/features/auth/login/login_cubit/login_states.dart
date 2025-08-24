@@ -14,3 +14,6 @@ class LoginSuccessState extends LoginStates{
 }
 class ChangePasswordVisibilityState extends LoginStates{
 }
+
+class ChangeLoading extends LoginStates{
+}

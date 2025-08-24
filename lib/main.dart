@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:math_house_parent/features/auth/forget_password_screen/forget_password_screen.dart';
+import 'package:math_house_parent/features/pages/home_screen/tabs/home_tab/home_tab.dart';
 import 'package:math_house_parent/features/pages/students_screen/students_screen.dart';
 import 'core/cashe/shared_preferences_utils.dart';
 import 'core/di/di.dart';
@@ -21,7 +22,7 @@ void main() async {
     routeName = AppRoutes.registerRoute;
   } else {
     //todo: token != null => user
-    routeName = AppRoutes.getStudent;
+    routeName = AppRoutes.homeTab;
   }
   runApp(MyApp(routeName: routeName,));
 }
@@ -46,6 +47,7 @@ class MyApp extends StatelessWidget{
             AppRoutes.forgetPasswordRoute: (context) => ForgetPasswordScreen(),
             AppRoutes.homeRoute: (context) => HomeScreen(),
             AppRoutes.getStudent: (context) => StudentsScreen(),
+            AppRoutes.homeTab: (context) => HomeTab(),
           },
         );
       },

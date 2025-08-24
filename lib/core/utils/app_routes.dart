@@ -4,4 +4,6 @@ class AppRoutes {
   static String registerRoute = "/register";
   static String forgetPasswordRoute="/forget_password";
   static String getStudent="/student_screen";
+  static String homeTab="/home_tab";
+
 }

@@ -38,9 +38,16 @@ class _StudentsScreenState extends State<StudentsScreen> {
       appBar: CustomAppBar(title: 'Son'),
       body: Column(
         children: [
-          CustomSearchFilterBar(
-            controller: cubit.controller,
-            showFilter: false,
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: CustomSearchFilterBar(
+              controller: cubit.controller,
+              showFilter: false,
+              onSearchChanged: (value){
+                cubit.searchStudents(value);
+              },
+              hintText:"Enter email or name",
+            ),
           ),
           Expanded(
             child: BlocConsumer<GetStudentsCubit, GetStudentsStates>(
