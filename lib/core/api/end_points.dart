@@ -6,5 +6,6 @@ class EndPoints{
   static const String confCode='/parent/student/check_code';
   static const String getStudents='/parent/student/lists';
   static const String addStudent='/parent/student/add';
+  static const String confirmCode='/parent/student/check_code';
 
 }

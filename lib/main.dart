@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:math_house_parent/features/auth/forget_password_screen/forget_password_screen.dart';
 import 'package:math_house_parent/features/pages/home_screen/tabs/home_tab/home_tab.dart';
 import 'package:math_house_parent/features/pages/students_screen/students_screen.dart';
+import 'package:math_house_parent/features/pages/students_screen/confirmation_screen.dart';
 import 'core/cashe/shared_preferences_utils.dart';
 import 'core/di/di.dart';
 import 'core/utils/app_routes.dart';
@@ -48,6 +49,7 @@ class MyApp extends StatelessWidget{
             AppRoutes.homeRoute: (context) => HomeScreen(),
             AppRoutes.getStudent: (context) => StudentsScreen(),
             AppRoutes.homeTab: (context) => HomeTab(),
+            AppRoutes.confirmationScreen: (context) => ConfirmationScreen(),
           },
         );
       },

@@ -5,5 +5,6 @@ class AppRoutes {
   static String forgetPasswordRoute="/forget_password";
   static String getStudent="/student_screen";
   static String homeTab="/home_tab";
+  static String confirmationScreen="/verification";
 
 }

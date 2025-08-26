@@ -1,5 +1,6 @@
 import 'package:math_house_parent/core/errors/failures.dart';
 import 'package:math_house_parent/domain/entities/get_students_response_entity.dart';
+import 'package:math_house_parent/domain/entities/send_code_response_entity.dart';
 
 abstract class GetStudentsStates{}
 class GetStudentsInitialState extends GetStudentsStates{}
