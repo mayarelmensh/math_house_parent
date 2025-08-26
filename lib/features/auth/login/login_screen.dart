@@ -54,7 +54,7 @@ class _LoginScreenState extends State<LoginScreen> {
             posActionName: 'Ok',
             posAction:
                 (){
-              Navigator.of(context).pushReplacementNamed(AppRoutes.getStudent);
+              Navigator.of(context).pushReplacementNamed(AppRoutes.homeTab);
             },
           );
         }

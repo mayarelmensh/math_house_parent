@@ -46,6 +46,8 @@ import '../../domain/use_case/send_code_to_student_use_case.dart' as _i359;
 import '../../features/auth/login/login_cubit/login_cubit.dart' as _i969;
 import '../../features/auth/register/register_cubit/register_cubit.dart'
     as _i547;
+import '../../features/pages/students_screen/cubit/confirm_code_cubit.dart'
+    as _i36;
 import '../../features/pages/students_screen/cubit/send_code_cubit.dart'
     as _i1019;
 import '../../features/pages/students_screen/cubit/students_screen_cubit.dart'
@@ -130,6 +132,11 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i1019.SendCodeCubit>(
       () => _i1019.SendCodeCubit(sendCodeUseCase: gh<_i359.SendCodeUseCase>()),
+    );
+    gh.factory<_i36.ConfirmCodeCubit>(
+      () => _i36.ConfirmCodeCubit(
+        confirmCodeUseCase: gh<_i708.ConfirmCodeUseCase>(),
+      ),
     );
     return this;
   }
