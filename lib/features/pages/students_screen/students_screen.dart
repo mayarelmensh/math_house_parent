@@ -66,7 +66,9 @@ class _StudentsScreenState extends State<StudentsScreen> {
                       AppColors.white,
                     );
                     Navigator.pushNamed(
-                        context, AppRoutes.confirmationScreen);
+                        context, AppRoutes.confirmationScreen,arguments: [
+
+                    ]);
                   } else if (state is SendCodeErrorState) {
                     ToastMessage.toastMessage(
                       "Failed to send code",

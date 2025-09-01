@@ -6,8 +6,7 @@ import 'package:math_house_parent/core/api/end_points.dart';
 import 'package:math_house_parent/core/errors/failures.dart';
 import 'package:math_house_parent/data/models/login_response_dm.dart';
 import 'package:math_house_parent/data/models/register_response_dm.dart';
-import 'package:math_house_parent/domain/entities/login_response_entity.dart';
-import 'package:math_house_parent/domain/repository/data_sources/auth_data_source.dart';
+import 'package:math_house_parent/domain/repository/data_sources/remote_data_source/auth_data_source.dart';
 @Injectable(as: AuthDataSource)
 class AuthRemoteDataSourceImpl implements AuthDataSource {
   ApiManager apiManager;

@@ -12,12 +12,14 @@ class GetStudentsCubit extends Cubit<GetStudentsStates> {
   TextEditingController controller = TextEditingController();
 
   List<StudentsEntity> allStudents = [];
+  List<StudentsEntity> myStudents = [];
+  int? selectedStudentId;
 
   GetStudentsCubit(this.getStudentsUseCase,this.sendCodeUseCase) : super(GetStudentsInitialState());
 
   void getStudents() async {
     emit(GetStudentsLoadingState());
-    final result = await getStudentsUseCase.invoke();
+    final result = await getStudentsUseCase.getAllStudents();
     result.fold(
           (failure) => emit(GetStudentsErrorState(error: failure)),
           (students) {
@@ -39,8 +41,23 @@ class GetStudentsCubit extends Cubit<GetStudentsStates> {
     }
   }
 
+  void getMyStudents() async {
+    emit(GetStudentsLoadingState());
+    final result = await getStudentsUseCase.getMyStudents();
+    result.fold(
+          (failure) => emit(GetStudentsErrorState(error: failure)),
+          (myStudents) {
+        myStudents = myStudents;
+        emit(GetMyStudents(myStudents: myStudents));
+      },
+    );
+  }
 
 
+  void selectStudent(int id) {
+    selectedStudentId = id;
+    emit(StudentSelected(id));
+  }
 
 }
 

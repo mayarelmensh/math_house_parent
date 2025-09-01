@@ -24,3 +24,6 @@ class UnauthorizedFailure extends Failures {
 class NotFoundFailure extends Failures {
   NotFoundFailure({required super.errorMsg});
 }
+class CacheFailure extends Failures {
+  CacheFailure({required super.errorMsg});
+}

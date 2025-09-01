@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:injectable/injectable.dart';
 import 'package:math_house_parent/core/errors/failures.dart';
-import 'package:math_house_parent/domain/repository/data_sources/confirm_code_data_source.dart';
+import 'package:math_house_parent/domain/repository/data_sources/remote_data_source/confirm_code_data_source.dart';
 import 'package:math_house_parent/domain/repository/getStudents/confirm_code_repository.dart';
 import '../../domain/entities/confirm_code_response_entity.dart';
 @Injectable(as :ConfirmCodeRepository)

@@ -7,5 +7,8 @@ class EndPoints{
   static const String getStudents='/parent/student/lists';
   static const String addStudent='/parent/student/add';
   static const String confirmCode='/parent/student/check_code';
+  static const String coursesList='/parent/courses/lists';
+  static const String packages='/parent/packages/packages/';
+  static const String  paymentMethods='/parent/packages/lists';
 
 }

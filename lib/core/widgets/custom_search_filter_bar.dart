@@ -9,6 +9,7 @@ class CustomSearchFilterBar extends StatefulWidget {
   final String? hintText;
   final TextEditingController? controller;
   final bool showFilter;
+  final Icon? icon;
 
   const CustomSearchFilterBar({
     super.key,
@@ -18,6 +19,7 @@ class CustomSearchFilterBar extends StatefulWidget {
     this.hintText,
     this.controller,
     this.showFilter = true,
+    this.icon,
   });
 
   @override
@@ -77,13 +79,13 @@ class _CustomSearchFilterBarState extends State<CustomSearchFilterBar> {
     return Container(
       height: MediaQuery.of(context).size.height * 0.08,
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.primary),
-        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.primaryColor),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
         children: [
           const SizedBox(width: 8),
-          const Icon(Icons.search, color: AppColors.primary),
+          const Icon(Icons.search, color: AppColors.darkGrey),
           const SizedBox(width: 8),
           Expanded(
             child: TextField(

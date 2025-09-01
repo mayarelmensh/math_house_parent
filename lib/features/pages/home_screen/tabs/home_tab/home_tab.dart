@@ -31,7 +31,7 @@ class HomeTab extends StatelessWidget {
             title: "Packages ",
             subtitle: "View students",
             onTap: () {
-              Navigator.pushNamed(context, '/students');
+              Navigator.pushNamed(context, AppRoutes.packagesScreen);
             },
           ),
           HomeCard(
@@ -39,7 +39,7 @@ class HomeTab extends StatelessWidget {
             title: "Courses",
             subtitle: "go to Courses",
             onTap: () {
-              Navigator.pushNamed(context, '/settings');
+              Navigator.pushNamed(context, AppRoutes.coursesScreen);
             },
           ),
           HomeCard(
@@ -62,7 +62,14 @@ class HomeTab extends StatelessWidget {
             title: "Log Out",
             subtitle: "Log out",
             onTap: () {
-              Navigator.pushNamed(context, '/notifications');
+              Navigator.pushNamed(context, AppRoutes.logOutScreen);
+            },
+          ),HomeCard(
+            icon: Icons.person,
+            title: "Profile ",
+            subtitle: "     go to profile   ",
+            onTap: () {
+              Navigator.pushNamed(context, AppRoutes.profileScreen);
             },
           ),
         ]),

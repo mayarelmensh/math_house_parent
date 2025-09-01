@@ -6,5 +6,11 @@ class AppRoutes {
   static String getStudent="/student_screen";
   static String homeTab="/home_tab";
   static String confirmationScreen="/verification";
+  static String profileScreen="/profile_screen";
+  static String logOutScreen="/log_out_screen";
+  static String coursesScreen="/courses";
+  static String chaptersScreen="/chapters_screen";
+  static String packagesScreen="/packages_screen";
+  static String paymentMethodsScreen="/payment_methods_screen";
 
 }

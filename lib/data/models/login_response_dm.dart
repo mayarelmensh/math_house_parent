@@ -1,72 +1,73 @@
 import 'package:math_house_parent/domain/entities/login_response_entity.dart';
 
-class LoginResponseDm extends LoginResponseEntity{
-  LoginResponseDm({
-      super.parent,
-      super.token,
-      this.errors
-  });
+class LoginResponseDm extends LoginResponseEntity {
+  LoginResponseDm({super.parent, super.token, this.errors});
 
-  LoginResponseDm.fromJson(dynamic json) {
-    parent = json['parent'] != null ? ParentLoginDm.fromJson(json['parent']) : null;
-    token = json['token'];
-  }
   String? errors;
 
-  // Map<String, dynamic> toJson() {
-  //   final map = <String, dynamic>{};
-  //   if (parent != null) {
-  //     map['parent'] = parent?.toJson();
-  //   }
-  //   map['token'] = token;
-  //   return map;
-  // }
+  factory LoginResponseDm.fromJson(Map<String, dynamic> json) {
+    return LoginResponseDm(
+      parent: json['parent'] != null
+          ? ParentLoginDm.fromJson(json['parent'])
+          : null,
+      token: json['token'],
+    );
+  }
 
+  Map<String, dynamic> toJson() {
+    final map = <String, dynamic>{};
+    if (parent != null) {
+      map['parent'] = (parent as ParentLoginDm).toJson();
+    }
+    map['token'] = token;
+    return map;
+  }
+
+  factory LoginResponseDm.fromEntity(LoginResponseEntity entity) {
+    return LoginResponseDm(
+      parent: entity.parent != null
+          ? ParentLoginDm.fromEntity(entity.parent!)
+          : null,
+      token: entity.token,
+      errors: null,
+    );
+  }
 }
 
-class ParentLoginDm  extends ParentLoginEntity{
+class ParentLoginDm extends ParentLoginEntity {
   ParentLoginDm({
-      super.id,
-      super.name,
-      super.email,
-      super.phone,
-      super.createdAt,
-      super.updatedAt,
-      super.status,
-      super.code,
-      super.token,
-      super.role,
-      super.students,});
+    super.id,
+    super.name,
+    super.email,
+    super.phone,
+    super.createdAt,
+    super.updatedAt,
+    super.status,
+    super.code,
+    super.token,
+    super.role,
+    super.students,
+  });
 
-  ParentLoginDm.fromJson(dynamic json) {
-    id = json['id'];
-    name = json['name'];
-    email = json['email'];
-    phone = json['phone'];
-    createdAt = json['created_at'];
-    updatedAt = json['updated_at'];
-    status = json['status'];
-    code = json['code'];
-    token = json['token'];
-    role = json['role'];
-    if (json['students'] != null) {
-      students = [];
-      json['students'].forEach((v) {
-        students?.add(Students.fromJson(v));
-      });
-    }
+  factory ParentLoginDm.fromJson(Map<String, dynamic> json) {
+    return ParentLoginDm(
+      id: json['id'],
+      name: json['name'],
+      email: json['email'],
+      phone: json['phone'],
+      createdAt: json['created_at'],
+      updatedAt: json['updated_at'],
+      status: json['status'],
+      code: json['code'],
+      token: json['token'],
+      role: json['role'],
+      students: json['students'] != null
+          ? (json['students'] as List)
+                .map((v) => StudentsDm.fromJson(v))
+                .toList()
+          : null,
+    );
   }
-  // int? id;
-  // String? name;
-  // String? email;
-  // String? phone;
-  // String? createdAt;
-  // String? updatedAt;
-  // int? status;
-  // dynamic code;
-  // String? token;
-  // String? role;
-  // List<Students>? students;
 
   Map<String, dynamic> toJson() {
     final map = <String, dynamic>{};
@@ -81,30 +82,43 @@ class ParentLoginDm  extends ParentLoginEntity{
     map['token'] = token;
     map['role'] = role;
     if (students != null) {
-      map['students'] =( students as List<Students>?)?.map((v) => v.toJson()).toList();
+      map['students'] = (students as List<StudentsDm>)
+          .map((v) => v.toJson())
+          .toList();
     }
     return map;
   }
 
+  factory ParentLoginDm.fromEntity(ParentLoginEntity entity) {
+    return ParentLoginDm(
+      id: entity.id,
+      name: entity.name,
+      email: entity.email,
+      phone: entity.phone,
+      createdAt: entity.createdAt,
+      updatedAt: entity.updatedAt,
+      status: entity.status,
+      code: entity.code,
+      token: entity.token,
+      role: entity.role,
+      students: entity.students != null
+          ? entity.students!.map((s) => StudentsDm.fromEntity(s)).toList()
+          : null,
+    );
+  }
 }
 
-class Students extends StudentsLoginEntity {
-  Students({
-      super.id,
-      super.nickName,
-      super.imageLink,
-      super.pivot,});
+class StudentsDm extends StudentsLoginEntity {
+  StudentsDm({super.id, super.nickName, super.imageLink, super.pivot});
 
-  Students.fromJson(dynamic json) {
-    id = json['id'];
-    nickName = json['nick_name'];
-    imageLink = json['image_link'];
-    pivot = json['pivot'] != null ? Pivot.fromJson(json['pivot']) : null;
+  factory StudentsDm.fromJson(Map<String, dynamic> json) {
+    return StudentsDm(
+      id: json['id'],
+      nickName: json['nick_name'],
+      imageLink: json['image_link'],
+      pivot: json['pivot'] != null ? PivotDm.fromJson(json['pivot']) : null,
+    );
   }
-  // int? id;
-  // String? nickName;
-  // dynamic imageLink;
-  // Pivot? pivot;
 
   Map<String, dynamic> toJson() {
     final map = <String, dynamic>{};
@@ -112,24 +126,27 @@ class Students extends StudentsLoginEntity {
     map['nick_name'] = nickName;
     map['image_link'] = imageLink;
     if (pivot != null) {
-      map['pivot'] = (pivot as Pivot?)?.toJson();
-      }
+      map['pivot'] = (pivot as PivotDm).toJson();
+    }
     return map;
   }
 
+  factory StudentsDm.fromEntity(StudentsLoginEntity entity) {
+    return StudentsDm(
+      id: entity.id,
+      nickName: entity.nickName,
+      imageLink: entity.imageLink,
+      pivot: entity.pivot != null ? PivotDm.fromEntity(entity.pivot!) : null,
+    );
+  }
 }
 
-class Pivot extends PivotLoginEntity {
-  Pivot({
-      super.parentId,
-      super.userId,});
+class PivotDm extends PivotLoginEntity {
+  PivotDm({super.parentId, super.userId});
 
-  Pivot.fromJson(dynamic json) {
-    parentId = json['parent_id'];
-    userId = json['user_id'];
+  factory PivotDm.fromJson(Map<String, dynamic> json) {
+    return PivotDm(parentId: json['parent_id'], userId: json['user_id']);
   }
-  // int? parentId;
-  // int? userId;
 
   Map<String, dynamic> toJson() {
     final map = <String, dynamic>{};
@@ -138,4 +155,7 @@ class Pivot extends PivotLoginEntity {
     return map;
   }
 
+  factory PivotDm.fromEntity(PivotLoginEntity entity) {
+    return PivotDm(parentId: entity.parentId, userId: entity.userId);
+  }
 }

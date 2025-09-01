@@ -42,8 +42,8 @@ class _LoginScreenState extends State<LoginScreen> {
             title: 'Error',
             posActionName: 'Ok',
             posAction: (){
-            Navigator.pop(context);
-            }
+             DialogUtils.hideLoading(context);
+              }
           );
         } else if (state is LoginSuccessState) {
          // DialogUtils.hideLoading(context: context);
@@ -136,7 +136,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 keyboardType: TextInputType.visiblePassword,
                                 suffixIcon: IconButton(
                                   onPressed: () {
-                                    loginCubit.changePasswordVisibility;
+                                    loginCubit.changePasswordVisibility();
                                   },
                                   icon: Icon(
                                     loginCubit.isPasswordObscure
