@@ -71,6 +71,13 @@ class HomeTab extends StatelessWidget {
             onTap: () {
               Navigator.pushNamed(context, AppRoutes.profileScreen);
             },
+          ),HomeCard(
+            icon: Icons.person,
+            title: "myStudent ",
+            subtitle: "     go to profile   ",
+            onTap: () {
+              Navigator.pushNamed(context, AppRoutes.myStudentScreen);
+            },
           ),
         ]),
     ),

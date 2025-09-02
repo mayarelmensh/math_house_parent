@@ -10,5 +10,6 @@ class EndPoints{
   static const String coursesList='/parent/courses/lists';
   static const String packages='/parent/packages/packages/';
   static const String  paymentMethods='/parent/packages/lists';
+  static const String  buyPackage='/parent/packages/payment_package/';
 
 }

@@ -5,8 +5,10 @@ import 'package:math_house_parent/features/auth/forget_password_screen/forget_pa
 import 'package:math_house_parent/features/pages/courses_screen/courses_screen.dart';
 import 'package:math_house_parent/features/pages/courses_screen/cubit/courses_cubit.dart';
 import 'package:math_house_parent/features/pages/home_screen/tabs/home_tab/home_tab.dart';
+import 'package:math_house_parent/features/pages/payment_methods/buy_package_screen.dart';
 import 'package:math_house_parent/features/pages/payment_methods/payment_methods_screen.dart';
 import 'package:math_house_parent/features/pages/profile_screen/profile_screen.dart';
+import 'package:math_house_parent/features/pages/students_screen/my_students_screen.dart';
 import 'package:math_house_parent/features/pages/students_screen/students_screen.dart';
 import 'package:math_house_parent/features/pages/students_screen/confirmation_screen.dart';
 import 'core/cache/shared_preferences_utils.dart';
@@ -32,7 +34,7 @@ void main() async {
     routeName = AppRoutes.registerRoute;
   } else {
     //todo: token != null => user
-    routeName = AppRoutes.homeTab;
+    routeName = AppRoutes.myStudentScreen;
   }
   runApp(MyApp(routeName: routeName,));
 }
@@ -51,7 +53,9 @@ class MyApp extends StatelessWidget{
         return MultiBlocProvider(
             providers: [
               BlocProvider(create: (_) => getIt<ProfileCubit>()),
-              BlocProvider(create: (_) => getIt<GetStudentsCubit>()),
+              BlocProvider<GetStudentsCubit>(
+                create: (_) => getIt<GetStudentsCubit>()..getMyStudents(),
+              ),
               BlocProvider(create: (_) => getIt<CoursesCubit>()),
               BlocProvider(create: (_) => getIt<PackagesCubit>()),
             ],
@@ -71,6 +75,8 @@ class MyApp extends StatelessWidget{
             AppRoutes.coursesScreen: (context) => CoursesScreen(),
             AppRoutes.packagesScreen: (context) => PackagesScreen(),
             AppRoutes.paymentMethodsScreen: (context) => PaymentMethodsScreen(),
+            AppRoutes.myStudentScreen: (context) => MyStudentsScreen(),
+            AppRoutes.buyPackageScreen: (context) => BuyPackageScreen(),
 
           },
         )

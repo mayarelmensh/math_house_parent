@@ -1,14 +1,14 @@
+import 'package:dartz/dartz.dart' as selectedPackage;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:math_house_parent/core/utils/app_colors.dart';
+import 'package:math_house_parent/core/utils/app_routes.dart';
 import 'package:math_house_parent/core/widgets/custom_app_bar.dart';
 import '../../../core/di/di.dart';
+import '../../../data/models/student_selected.dart';
 import '../../../domain/entities/courses_response_entity.dart';
-import '../../../domain/entities/get_students_response_entity.dart';
 import '../courses_screen/cubit/courses_cubit.dart';
 import '../courses_screen/cubit/courses_states.dart';
-import '../students_screen/cubit/students_screen_cubit.dart';
-import '../students_screen/cubit/students_screen_states.dart';
 import 'cubit/packages_cubit.dart';
 import 'cubit/packages_states.dart';
 
@@ -21,18 +21,20 @@ class PackagesScreen extends StatefulWidget {
 
 class _PackagesScreenState extends State<PackagesScreen> {
   CourseEntity? selectedCourse;
-  StudentsEntity? selectedStudent;
   String? selectedModuleFilter;
 
   final packagesCubit = getIt<PackagesCubit>();
   final coursesCubit = getIt<CoursesCubit>();
-  final studentsCubit = getIt<GetStudentsCubit>();
 
   @override
   void initState() {
     super.initState();
     coursesCubit.getCoursesList();
-    studentsCubit.getMyStudents();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
   }
 
   @override
@@ -42,27 +44,34 @@ class _PackagesScreenState extends State<PackagesScreen> {
   }
 
   void _loadPackages() {
-    if (selectedCourse != null && selectedStudent != null) {
+    final studentId = SelectedStudent.studentId;
+    print(studentId);
+
+    if (studentId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a student first')),
+      );
+      return;
+    }
+
+    if (selectedCourse != null) {
       packagesCubit.getPackagesForCourse(
         courseId: selectedCourse!.id!,
-        userId: selectedStudent!.id!,
+        userId: studentId,
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Please select course and student'),
+          content: const Text('Please select a course first'),
           backgroundColor: Colors.orange,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
         ),
       );
     }
   }
 
   List filterPackagesByModule(List packages) {
-    if (selectedModuleFilter == null || selectedModuleFilter == 'All') return packages;
+    if (selectedModuleFilter == null || selectedModuleFilter == 'All')
+      return packages;
     return packages.where((p) => p.module == selectedModuleFilter).toList();
   }
 
@@ -148,7 +157,10 @@ class _PackagesScreenState extends State<PackagesScreen> {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: _getModuleColor(package.module),
                     borderRadius: BorderRadius.circular(20),
@@ -167,7 +179,11 @@ class _PackagesScreenState extends State<PackagesScreen> {
             const SizedBox(height: 12),
             Row(
               children: [
-                Icon(Icons.attach_money, color: Colors.green.shade600, size: 20),
+                Icon(
+                  Icons.attach_money,
+                  color: Colors.green.shade600,
+                  size: 20,
+                ),
                 const SizedBox(width: 4),
                 Text(
                   "${package.price ?? 0} EGP",
@@ -189,6 +205,54 @@ class _PackagesScreenState extends State<PackagesScreen> {
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 12),
+            Align(
+              alignment: Alignment.centerRight,
+              child: ElevatedButton(
+                onPressed: () {
+                  if (SelectedStudent.studentId != null) {
+                    Navigator.pushNamed(
+                      context,
+                      AppRoutes.paymentMethodsScreen,
+                      arguments: {
+                        'packageId': package.id,
+
+                        // هنا استخدم package.id وليس selectedPackage.id
+                      },
+
+                    );
+                    debugPrint(
+                      "🛒 Buy package: ${package.id}, for student: ${SelectedStudent.studentId} ",
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Please select a student first'),
+                      ),
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  elevation: 2,
+                ),
+                child: Text(
+                  'Buy Package',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.white,
+                  ),
+                ),
+              ),
             ),
           ],
         ),
@@ -227,7 +291,6 @@ class _PackagesScreenState extends State<PackagesScreen> {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => coursesCubit),
-        BlocProvider(create: (_) => studentsCubit),
         BlocProvider(create: (_) => packagesCubit),
       ],
       child: Scaffold(
@@ -245,19 +308,25 @@ class _PackagesScreenState extends State<PackagesScreen> {
                   bloc: coursesCubit,
                   builder: (context, state) {
                     if (state is CoursesLoadingState) {
-                      return const Center(
+                      return Center(
                         child: Padding(
                           padding: EdgeInsets.all(20),
-                          child: CircularProgressIndicator(),
+                          child: CircularProgressIndicator(
+                            color: AppColors.primaryColor,
+                          ),
                         ),
                       );
                     } else if (state is CoursesSuccessState) {
-                      final courses = state.coursesResponseEntity
-                          .categories!
+                      final courses = state.coursesResponseEntity.categories!
                           .expand((cat) => cat.course!)
                           .toList();
                       return DropdownButtonFormField<CourseEntity>(
                         decoration: InputDecoration(
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
                           hintText: "Choose a course",
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
@@ -265,7 +334,9 @@ class _PackagesScreenState extends State<PackagesScreen> {
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(color: AppColors.primaryColor),
+                            borderSide: BorderSide(
+                              color: AppColors.primaryColor,
+                            ),
                           ),
                           filled: true,
                           fillColor: Colors.grey.shade50,
@@ -293,63 +364,17 @@ class _PackagesScreenState extends State<PackagesScreen> {
                 ),
               ),
 
-              // Student Selection
-              _buildSelectionCard(
-                title: "Select Student",
-                icon: Icons.person,
-                child: BlocBuilder<GetStudentsCubit, GetStudentsStates>(
-                  builder: (context, state) {
-                    if (state is GetStudentsLoadingState) {
-                      return const Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(20),
-                          child: CircularProgressIndicator(),
-                        ),
-                      );
-                    } else if (state is GetMyStudents) {
-                      return DropdownButtonFormField<StudentsEntity>(
-                        decoration: InputDecoration(
-                          hintText: "Choose a student",
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(color: Colors.grey.shade300),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(color: AppColors.primaryColor),
-                          ),
-                          filled: true,
-                          fillColor: Colors.grey.shade50,
-                        ),
-                        value: selectedStudent,
-                        items: state.myStudents.map((s) {
-                          return DropdownMenuItem(
-                            value: s,
-                            child: Text(
-                              s.nickName ?? "",
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                          );
-                        }).toList(),
-                        onChanged: (val) {
-                          setState(() => selectedStudent = val);
-                        },
-                      );
-                    }
-                    return Container(
-                      padding: const EdgeInsets.all(20),
-                      child: const Text("Error loading students"),
-                    );
-                  },
-                ),
-              ),
-
               // Module Filter
               _buildSelectionCard(
                 title: "Filter by Type",
                 icon: Icons.filter_list,
                 child: DropdownButtonFormField<String>(
                   decoration: InputDecoration(
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                     hintText: "Choose content type",
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
@@ -366,7 +391,10 @@ class _PackagesScreenState extends State<PackagesScreen> {
                   items: const [
                     DropdownMenuItem(value: 'All', child: Text("All")),
                     DropdownMenuItem(value: 'Live', child: Text("Live")),
-                    DropdownMenuItem(value: 'Question', child: Text("Questions")),
+                    DropdownMenuItem(
+                      value: 'Question',
+                      child: Text("Questions"),
+                    ),
                     DropdownMenuItem(value: 'Exam', child: Text("Exams")),
                   ],
                   onChanged: (val) {
@@ -402,24 +430,32 @@ class _PackagesScreenState extends State<PackagesScreen> {
 
               // Packages List
               Expanded(
+                flex: 3,
                 child: BlocBuilder<PackagesCubit, PackagesStates>(
                   builder: (context, state) {
                     if (state is PackagesLoadingState) {
-                      return const Center(
+                      return Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            CircularProgressIndicator(),
+                            CircularProgressIndicator(
+                              color: AppColors.primaryColor,
+                            ),
                             SizedBox(height: 16),
                             Text(
                               "Loading packages...",
-                              style: TextStyle(fontSize: 16, color: Colors.grey),
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey,
+                              ),
                             ),
                           ],
                         ),
                       );
                     } else if (state is PackagesSpecificCourseSuccessState) {
-                      var packages = filterPackagesByModule(state.packagesResponseList);
+                      var packages = filterPackagesByModule(
+                        state.packagesResponseList,
+                      );
                       if (packages.isEmpty) {
                         return Center(
                           child: Column(
@@ -470,7 +506,7 @@ class _PackagesScreenState extends State<PackagesScreen> {
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            "Select course and student first",
+                            "Select course first",
                             style: TextStyle(
                               fontSize: 18,
                               color: Colors.grey.shade600,

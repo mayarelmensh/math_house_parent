@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:math_house_parent/core/utils/app_colors.dart';
+import 'package:math_house_parent/core/utils/app_routes.dart';
 import 'package:math_house_parent/core/widgets/custom_app_bar.dart';
+import 'package:math_house_parent/features/widgets/custom_elevated_button.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/di/di.dart';
 import '../../../domain/entities/payment_methods_response_entity.dart';
@@ -10,7 +12,9 @@ import 'cubit/payment_methods_cubit.dart';
 import 'cubit/payment_methods_states.dart';
 
 class PaymentMethodsScreen extends StatefulWidget {
-  const PaymentMethodsScreen({Key? key}) : super(key: key);
+  final int? packageId;
+
+  const PaymentMethodsScreen({Key? key, this.packageId}) : super(key: key);
 
   @override
   _PaymentMethodsScreenState createState() => _PaymentMethodsScreenState();
@@ -18,11 +22,23 @@ class PaymentMethodsScreen extends StatefulWidget {
 
 class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
   final paymentMethodsCubit = getIt<PaymentMethodsCubit>();
+  int? packageId;
 
   @override
   void initState() {
     super.initState();
-    paymentMethodsCubit.getPaymentMethods(userId: 2);
+    // استقبل packageId من widget أو من arguments
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final args =
+          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      setState(() {
+        packageId = args != null ? args['packageId'] as int? : widget.packageId;
+      });
+      // استخدم packageId حسب الحاجة، مثلاً:
+      paymentMethodsCubit.getPaymentMethods(userId: 2);
+      // أو إذا تريد تستخدم packageId في طلب بيانات:
+      // paymentMethodsCubit.getPaymentMethodsForPackage(packageId: packageId, userId: 2);
+    });
   }
 
   @override
@@ -76,27 +92,27 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                     borderRadius: BorderRadius.circular(12),
                     child: paymentMethod.logo != null
                         ? Image.network(
-                      paymentMethod.logo!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: Colors.grey.shade200,
-                          child: Icon(
-                            Icons.payment,
-                            size: 30,
-                            color: AppColors.primaryColor,
-                          ),
-                        );
-                      },
-                    )
+                            paymentMethod.logo!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                color: Colors.grey.shade200,
+                                child: Icon(
+                                  Icons.payment,
+                                  size: 30,
+                                  color: AppColors.primaryColor,
+                                ),
+                              );
+                            },
+                          )
                         : Container(
-                      color: Colors.grey.shade200,
-                      child: Icon(
-                        Icons.payment,
-                        size: 30,
-                        color: AppColors.primaryColor,
-                      ),
-                    ),
+                            color: Colors.grey.shade200,
+                            child: Icon(
+                              Icons.payment,
+                              size: 30,
+                              color: AppColors.primaryColor,
+                            ),
+                          ),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -115,9 +131,14 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                       ),
                       const SizedBox(height: 4),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
-                          color: _getPaymentTypeColor(paymentMethod.paymentType),
+                          color: _getPaymentTypeColor(
+                            paymentMethod.paymentType,
+                          ),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
@@ -180,6 +201,24 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                         height: 1.4,
                       ),
                     ),
+                    SizedBox(height: 20),
+                    CustomElevatedButton(
+                      text: "select this method",
+                      onPressed: () {
+                        Navigator.pushNamed(
+                          context,
+                          AppRoutes.buyPackageScreen,
+                          arguments: {
+                            'packageId': packageId,
+                            'paymentMethodId': paymentMethod.id,
+                            'paymentMethodName': paymentMethod.payment?.toLowerCase(),
+                            // إذا تريد تمرير أيضاً معرف طريقة الدفع
+                          },
+                        );
+                      },
+                      backgroundColor: AppColors.primaryColor,
+                      textStyle: TextStyle(color: AppColors.white),
+                    ),
                   ],
                 ),
               ),
@@ -203,11 +242,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
               color: Colors.green.shade100,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(
-              Icons.phone,
-              color: Colors.green.shade700,
-              size: 20,
-            ),
+            child: Icon(Icons.phone, color: Colors.green.shade700, size: 20),
           ),
         );
       case 'link':
@@ -254,11 +289,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
               color: Colors.grey.shade200,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(
-              Icons.copy,
-              color: Colors.grey.shade700,
-              size: 20,
-            ),
+            child: Icon(Icons.copy, color: Colors.grey.shade700, size: 20),
           ),
         );
     }
@@ -301,9 +332,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
         content: Text(message),
         backgroundColor: Colors.green,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
   }
@@ -327,10 +356,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
           ),
           title: Row(
             children: [
-              Icon(
-                Icons.credit_card,
-                color: AppColors.primaryColor,
-              ),
+              Icon(Icons.credit_card, color: AppColors.primaryColor),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -351,10 +377,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
               const SizedBox(height: 16),
               const Text(
                 "This payment method supports online integration with various payment options.",
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey,
-                ),
+                style: TextStyle(fontSize: 14, color: Colors.grey),
               ),
             ],
           ),
@@ -369,7 +392,9 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                 // Handle integration payment logic here
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text("Opening ${paymentMethod.payment} integration..."),
+                    content: Text(
+                      "Opening ${paymentMethod.payment} integration...",
+                    ),
                     backgroundColor: AppColors.primaryColor,
                   ),
                 );
@@ -399,13 +424,14 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
         backgroundColor: Colors.grey.shade50,
         appBar: CustomAppBar(title: "Payment Methods"),
         body: BlocBuilder<PaymentMethodsCubit, PaymentMethodsStates>(
+          bloc: paymentMethodsCubit,
           builder: (context, state) {
             if (state is PaymentMethodsLoadingState) {
-              return const Center(
+              return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CircularProgressIndicator(),
+                    CircularProgressIndicator(color: AppColors.primaryColor),
                     SizedBox(height: 16),
                     Text(
                       "Loading payment methods...",
@@ -415,7 +441,8 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                 ),
               );
             } else if (state is PaymentMethodsSuccessState) {
-              final paymentMethods = state.paymentMethodsResponse.paymentMethods;
+              final paymentMethods =
+                  state.paymentMethodsResponse.paymentMethods;
 
               if (paymentMethods == null || paymentMethods.isEmpty) {
                 return Center(
