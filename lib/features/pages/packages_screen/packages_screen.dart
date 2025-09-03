@@ -217,7 +217,10 @@ class _PackagesScreenState extends State<PackagesScreen> {
                       AppRoutes.paymentMethodsScreen,
                       arguments: {
                         'packageId': package.id,
-
+                         'packageName':package.name,
+                          'packagePrice':package.price,
+                          'packageModule':package.module,
+                        'packageDuration':package.duration,
                         // هنا استخدم package.id وليس selectedPackage.id
                       },
 

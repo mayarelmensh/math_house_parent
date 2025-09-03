@@ -12,7 +12,7 @@ import 'cubit/buy_package_states.dart';
 class BuyPackageScreen extends StatefulWidget {
   final int? packageId;
   final int? paymentMethodId;
-  final String? paymentMethodName; // اسم طريقة الدفع (مثلاً "wallet")
+  final String? paymentMethodName;
 
   const BuyPackageScreen({
     Key? key,
@@ -68,7 +68,7 @@ class _BuyPackageScreenState extends State<BuyPackageScreen> {
     }
   }
 
-  void _buyPackage() {
+  void _confirmPurchase() {
     if (packageId == null || paymentMethodId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -80,14 +80,15 @@ class _BuyPackageScreenState extends State<BuyPackageScreen> {
     }
 
     String imageData;
-
-    if (paymentMethodName == 'wallet') {
+    if (paymentMethodName == 'wallet'||paymentMethodName == 'Wallet') {
       imageData = 'wallet';
+      paymentMethodId=2;
+      print(imageData);
     } else {
       if (_invoiceImage == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Please upload the invoice image'),
+            content: Text('Please upload the invoice image first'),
             backgroundColor: Colors.orange,
           ),
         );
@@ -121,97 +122,81 @@ class _BuyPackageScreenState extends State<BuyPackageScreen> {
           bloc: buyPackageCubit,
           listener: (context, state) {
             if (state is BuyPackageError) {
+              print(state.message);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(state.message),
                   backgroundColor: Colors.red,
                 ),
               );
+            } else if (state is BuyPackageSuccess) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(state.response.success),
+                  backgroundColor: AppColors.green,
+                ),
+              );
             }
           },
           builder: (context, state) {
             if (state is BuyPackageLoading) {
-              return  Center(child: CircularProgressIndicator(
-                color: AppColors.primaryColor,
-              ));
-            } else if (state is BuyPackageSuccess) {
               return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.check_circle, size: 80, color: AppColors.green),
-                    const SizedBox(height: 16),
-                    Text(
-                      state.response.success,
-                      style: const TextStyle(
-                          fontSize: 20, fontWeight: FontWeight.bold),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              );
-            } else if (state is BuyPackageError) {
-              return Center(
-                child: ElevatedButton(
-                  onPressed: _buyPackage,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryColor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 24, vertical: 12),
-                  ),
-                  child: const Text(
-                    "Retry",
-                    style: TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.bold),
-                  ),
-                ),
+                child: CircularProgressIndicator(color: AppColors.primaryColor),
               );
             }
 
             return Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  if (paymentMethodName == 'wallet')
-                    Text(
-                      'Payment method is wallet. No invoice image needed.',
-                      style: TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold),
-                    )
-                  else
-                    Center(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(vertical:200 ),
-                        child: Column(
-                          children: [
-                            _invoiceImage == null
-                                ? Text(
-                              'Please upload the invoice image',
-                              style: TextStyle(fontSize: 16),
-                            )
-                                : Image.file(_invoiceImage!, height: 200),
-                            const SizedBox(height: 16),
-                            ElevatedButton.icon(
-                              onPressed: _pickImage,
-                              icon: Icon(Icons.upload_file,color: AppColors.white,),
-                              label: Text('Upload Invoice Image',style: TextStyle(color: AppColors.white),),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primaryColor,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 24, vertical: 12),
+              child: Center(
+                child: Column(
+                  children: [
+                    if (paymentMethodName != 'wallet')
+                      Column(
+                        children: [
+                          _invoiceImage == null
+                              ? const Text('Please upload the invoice image')
+                              : Image.file(_invoiceImage!, height: 200),
+                          const SizedBox(height: 16),
+                          ElevatedButton.icon(
+                            onPressed: _pickImage,
+                            icon:  Icon(Icons.upload_file,color: AppColors.white,),
+                            label:  Text('Upload Invoice Image',style: TextStyle(color: AppColors.white),),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primaryColor,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
                               ),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 24, vertical: 12),
                             ),
-                          ],
+                          ),
+                        ],
+                      )
+                    else
+                      const Text(
+                        'Payment method is wallet. No invoice image needed.',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: (paymentMethodName == 'wallet' ||
+                          _invoiceImage != null)
+                          ? _confirmPurchase
+                          : null,
+
+                      child:  Text('Confirm Purchase',
+                        style: TextStyle(color: AppColors.white),),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 12),
                       ),
                     ),
-                ],
+                  ],
+                ),
               ),
             );
           },

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:math' as math;
 
+import 'package:math_house_parent/core/utils/app_colors.dart';
+
 class HomeCard extends StatefulWidget {
   final IconData icon;
   final String title;
@@ -30,15 +32,11 @@ class HomeCard extends StatefulWidget {
   State<HomeCard> createState() => _HomeCardState();
 }
 
-class _HomeCardState extends State<HomeCard>
-    with TickerProviderStateMixin {
-
-  // Controllers
+class _HomeCardState extends State<HomeCard> with TickerProviderStateMixin {
   late AnimationController _mainController;
   late AnimationController _particlesController;
   late AnimationController _pulseController;
 
-  // Animations
   late Animation<double> _scaleAnimation;
   late Animation<double> _elevationAnimation;
   late Animation<double> _glowAnimation;
@@ -73,69 +71,34 @@ class _HomeCardState extends State<HomeCard>
       vsync: this,
     )..repeat(reverse: true);
 
-    _scaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.08,
-    ).animate(CurvedAnimation(
-      parent: _mainController,
-      curve: Curves.fastOutSlowIn,
-    ));
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.08).animate(
+      CurvedAnimation(parent: _mainController, curve: Curves.fastOutSlowIn),
+    );
 
-    _elevationAnimation = Tween<double>(
-      begin: 12.0,
-      end: 28.0,
-    ).animate(CurvedAnimation(
-      parent: _mainController,
-      curve: Curves.easeOutCubic,
-    ));
+    _elevationAnimation = Tween<double>(begin: 12.0, end: 28.0).animate(
+      CurvedAnimation(parent: _mainController, curve: Curves.easeOutCubic),
+    );
 
-    _glowAnimation = Tween<double>(
-      begin: 0.3,
-      end: 0.8,
-    ).animate(CurvedAnimation(
-      parent: _mainController,
-      curve: Curves.easeInOut,
-    ));
+    _glowAnimation = Tween<double>(begin: 0.3, end: 0.8).animate(
+      CurvedAnimation(parent: _mainController, curve: Curves.easeInOut),
+    );
 
-    _iconScaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.2,
-    ).animate(CurvedAnimation(
-      parent: _mainController,
-      curve: Curves.elasticOut,
-    ));
+    _iconScaleAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
+      CurvedAnimation(parent: _mainController, curve: Curves.elasticOut),
+    );
 
-    _textScaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.05,
-    ).animate(CurvedAnimation(
-      parent: _mainController,
-      curve: Curves.easeOut,
-    ));
+    _textScaleAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(
+      CurvedAnimation(parent: _mainController, curve: Curves.easeOut),
+    );
 
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.02),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _mainController,
-      curve: Curves.fastOutSlowIn,
-    ));
+    _slideAnimation = Tween<Offset>(begin: const Offset(0, 0.02), end: Offset.zero)
+        .animate(CurvedAnimation(parent: _mainController, curve: Curves.fastOutSlowIn));
 
-    _rotationAnimation = Tween<double>(
-      begin: 0.0,
-      end: 0.05,
-    ).animate(CurvedAnimation(
-      parent: _mainController,
-      curve: Curves.elasticOut,
-    ));
+    _rotationAnimation =
+        Tween<double>(begin: 0.0, end: 0.05).animate(CurvedAnimation(parent: _mainController, curve: Curves.elasticOut));
 
-    _pulseAnimation = Tween<double>(
-      begin: 0.95,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _pulseController,
-      curve: Curves.easeInOut,
-    ));
+    _pulseAnimation = Tween<double>(begin: 0.95, end: 1.0)
+        .animate(CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut));
   }
 
   @override
@@ -146,7 +109,6 @@ class _HomeCardState extends State<HomeCard>
     super.dispose();
   }
 
-  // Hover handlers
   void _onHoverEnter() {
     if (!_isHovered) {
       setState(() => _isHovered = true);
@@ -161,7 +123,6 @@ class _HomeCardState extends State<HomeCard>
     }
   }
 
-  // Tap handlers
   void _onTapDown() {
     setState(() => _isPressed = true);
     HapticFeedback.lightImpact();
@@ -181,9 +142,7 @@ class _HomeCardState extends State<HomeCard>
     final theme = Theme.of(context);
     final size = MediaQuery.of(context).size;
 
-    // Responsive values
     final isTablet = size.width > 600;
-    final isMobile = size.width <= 600;
 
     final cardPadding = isTablet ? 28.0 : 20.0;
     final iconSize = isTablet ? 48.0 : 40.0;
@@ -191,16 +150,12 @@ class _HomeCardState extends State<HomeCard>
     final subtitleSize = isTablet ? 14.0 : 12.0;
     final borderRadius = isTablet ? 24.0 : 20.0;
 
-    final primaryColor = widget.primaryColor ?? const Color(0xFFCF202F); // AppColors.primary
-    final accentColor = widget.accentColor ?? const Color(0xFFEFA947); // AppColors.yellow
+    final primaryColor = widget.primaryColor ?? AppColors.primaryColor;
+    final accentColor = widget.accentColor ?? const Color(0xFFEFA947);
     final surfaceColor = theme.colorScheme.surface;
 
     return AnimatedBuilder(
-      animation: Listenable.merge([
-        _scaleAnimation,
-        _pulseAnimation,
-        _glowAnimation,
-      ]),
+      animation: Listenable.merge([_scaleAnimation, _pulseAnimation, _glowAnimation]),
       builder: (context, child) {
         return Transform.scale(
           scale: _scaleAnimation.value * (_isPressed ? 0.98 : 1.0),
@@ -218,21 +173,18 @@ class _HomeCardState extends State<HomeCard>
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(borderRadius),
                     boxShadow: [
-                      // Main shadow
                       BoxShadow(
-                        color: primaryColor.withOpacity(0.15),
+                        color: primaryColor.withOpacity(0.03),
                         blurRadius: _elevationAnimation.value,
                         spreadRadius: 2,
                         offset: Offset(0, _elevationAnimation.value / 3),
                       ),
-                      // Glow effect
                       if (widget.enableGlow)
                         BoxShadow(
                           color: primaryColor.withOpacity(_glowAnimation.value * 0.1),
                           blurRadius: _elevationAnimation.value * 1.5,
                           spreadRadius: _isHovered ? 4 : 0,
                         ),
-                      // Inner light
                       BoxShadow(
                         color: Colors.white.withOpacity(0.1),
                         blurRadius: 10,
@@ -244,28 +196,10 @@ class _HomeCardState extends State<HomeCard>
                     borderRadius: BorderRadius.circular(borderRadius),
                     child: Stack(
                       children: [
-                        // Background gradient
                         _buildBackground(primaryColor, accentColor, surfaceColor),
-
-                        // Floating particles
-                        if (widget.enableParticles)
-                          _buildParticles(primaryColor, isTablet),
-
-                        // Glass overlay
+                        if (widget.enableParticles) _buildParticles(primaryColor, isTablet),
                         _buildGlassOverlay(borderRadius),
-
-                        // Main content
-                        _buildContent(
-                          cardPadding,
-                          iconSize,
-                          titleSize,
-                          subtitleSize,
-                          primaryColor,
-                          accentColor,
-                          isTablet,
-                        ),
-
-                        // Ripple effect
+                        _buildContent(cardPadding, iconSize, titleSize, subtitleSize, primaryColor, accentColor, isTablet),
                         _buildRippleEffect(borderRadius),
                       ],
                     ),
@@ -375,13 +309,8 @@ class _HomeCardState extends State<HomeCard>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Animated icon
             AnimatedBuilder(
-              animation: Listenable.merge([
-                _iconScaleAnimation,
-                _rotationAnimation,
-                _pulseAnimation,
-              ]),
+              animation: Listenable.merge([_iconScaleAnimation, _rotationAnimation, _pulseAnimation]),
               builder: (context, child) {
                 return Transform.scale(
                   scale: _iconScaleAnimation.value * _pulseAnimation.value,
@@ -407,20 +336,13 @@ class _HomeCardState extends State<HomeCard>
                           ),
                         ],
                       ),
-                      child: Icon(
-                        widget.icon,
-                        size: iconSize,
-                        color: primaryColor,
-                      ),
+                      child: Icon(widget.icon, size: iconSize, color: primaryColor),
                     ),
                   ),
                 );
               },
             ),
-
             SizedBox(height: isTablet ? 20 : 16),
-
-            // Animated title
             AnimatedBuilder(
               animation: _textScaleAnimation,
               builder: (context, child) {
@@ -449,8 +371,6 @@ class _HomeCardState extends State<HomeCard>
                 );
               },
             ),
-
-            // Subtitle
             if (widget.subtitle != null) ...[
               SizedBox(height: isTablet ? 8 : 6),
               Text(
@@ -466,10 +386,7 @@ class _HomeCardState extends State<HomeCard>
                 ),
               ),
             ],
-
             SizedBox(height: isTablet ? 16 : 12),
-
-            // Progress indicator
             AnimatedContainer(
               duration: const Duration(milliseconds: 300),
               width: _isHovered ? 60 : 40,
@@ -477,11 +394,7 @@ class _HomeCardState extends State<HomeCard>
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(2),
                 gradient: LinearGradient(
-                  colors: [
-                    primaryColor,
-                    accentColor,
-                    Colors.white.withOpacity(0.8),
-                  ],
+                  colors: [primaryColor, accentColor, Colors.white.withOpacity(0.8)],
                 ),
                 boxShadow: [
                   BoxShadow(
@@ -511,3 +424,4 @@ class _HomeCardState extends State<HomeCard>
     );
   }
 }
+

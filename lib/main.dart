@@ -5,6 +5,8 @@ import 'package:math_house_parent/features/auth/forget_password_screen/forget_pa
 import 'package:math_house_parent/features/pages/courses_screen/courses_screen.dart';
 import 'package:math_house_parent/features/pages/courses_screen/cubit/courses_cubit.dart';
 import 'package:math_house_parent/features/pages/home_screen/tabs/home_tab/home_tab.dart';
+import 'package:math_house_parent/features/pages/payment_history/payment_history_screen.dart';
+import 'package:math_house_parent/features/pages/payment_invoice/payment_invoice_screen.dart';
 import 'package:math_house_parent/features/pages/payment_methods/buy_package_screen.dart';
 import 'package:math_house_parent/features/pages/payment_methods/payment_methods_screen.dart';
 import 'package:math_house_parent/features/pages/profile_screen/profile_screen.dart';
@@ -17,6 +19,7 @@ import 'core/utils/app_routes.dart';
 import 'core/utils/my_bloc_observer.dart';
 import 'features/auth/login/login_screen.dart';
 import 'features/auth/register/register_screen.dart';
+import 'features/pages/courses_screen/buy_courses_screen.dart';
 import 'features/pages/home_screen/home_screen.dart';
 import 'features/pages/log_out_screen/log_out_screen.dart';
 import 'features/pages/packages_screen/cubit/packages_cubit.dart';
@@ -72,11 +75,14 @@ class MyApp extends StatelessWidget{
             AppRoutes.confirmationScreen: (context) => ConfirmationScreen(),
             AppRoutes.profileScreen: (context) => ProfileScreen(),
             AppRoutes.logOutScreen: (context) => LogOutScreen(),
-            AppRoutes.coursesScreen: (context) => CoursesScreen(),
+            // AppRoutes.coursesScreen: (context) => CoursesScreen(),
             AppRoutes.packagesScreen: (context) => PackagesScreen(),
             AppRoutes.paymentMethodsScreen: (context) => PaymentMethodsScreen(),
             AppRoutes.myStudentScreen: (context) => MyStudentsScreen(),
             AppRoutes.buyPackageScreen: (context) => BuyPackageScreen(),
+            AppRoutes.paymentHistory: (context) => PaymentHistoryScreen(),
+            AppRoutes.paymentInvoice: (context) => PaymentInvoiceScreen(),
+            AppRoutes.buyCourse: (context) => BuyCourseScreen(),
 
           },
         )

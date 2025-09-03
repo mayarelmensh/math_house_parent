@@ -14,5 +14,8 @@ class AppRoutes {
   static String paymentMethodsScreen="/payment_methods_screen";
   static String myStudentScreen="/my_student_screen";
   static String buyPackageScreen="/buy_package_screen";
+  static String paymentHistory="/payment_history_screen";
+  static String paymentInvoice="/payment_invoice_screen";
+  static String buyCourse="/buy_screen_screen";
 
 }

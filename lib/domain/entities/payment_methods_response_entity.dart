@@ -5,7 +5,7 @@ class PaymentMethodsResponseEntity {
 }
 
 class PaymentMethodEntity {
-  final int? id;
+  final dynamic? id;
   final String? payment;
   final String? paymentType;
   final String? description;

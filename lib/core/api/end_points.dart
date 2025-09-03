@@ -11,5 +11,9 @@ class EndPoints{
   static const String packages='/parent/packages/packages/';
   static const String  paymentMethods='/parent/packages/lists';
   static const String  buyPackage='/parent/packages/payment_package/';
+  static const String  paymentHistory='/parent/payment/history';
+  static const String  paymentInvoice='/parent/payment/invoic/';
+  static const String  buyCourse='/parent/courses/buy_course';
+  static const String  buyChapter='/parent/courses/buy_chapters';
 
 }

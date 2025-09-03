@@ -85,9 +85,17 @@ import '../../domain/use_case/send_code_to_student_use_case.dart' as _i359;
 import '../../features/auth/login/login_cubit/login_cubit.dart' as _i969;
 import '../../features/auth/register/register_cubit/register_cubit.dart'
     as _i547;
+import '../../features/pages/courses_screen/cubit/buy_chapter_cubit.dart'
+    as _i214;
+import '../../features/pages/courses_screen/cubit/buy_course_cubit.dart'
+    as _i61;
 import '../../features/pages/courses_screen/cubit/courses_cubit.dart' as _i91;
 import '../../features/pages/packages_screen/cubit/packages_cubit.dart'
     as _i868;
+import '../../features/pages/payment_history/cubit/payment_history_cubit.dart'
+    as _i926;
+import '../../features/pages/payment_invoice/cubit/paymnt_invoice_cubit.dart'
+    as _i222;
 import '../../features/pages/payment_methods/cubit/buy_package_cubit.dart'
     as _i161;
 import '../../features/pages/payment_methods/cubit/payment_methods_cubit.dart'
@@ -119,10 +127,22 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i724.PaymentMethodsRemoteDataSource>(
       () => _i207.PaymentMethodsRemoteDataSourceImpl(gh<_i1047.ApiManager>()),
     );
+    gh.factory<_i926.PaymentHistoryCubit>(
+      () => _i926.PaymentHistoryCubit(gh<_i1047.ApiManager>()),
+    );
+    gh.factory<_i222.PaymentInvoiceCubit>(
+      () => _i222.PaymentInvoiceCubit(gh<_i1047.ApiManager>()),
+    );
     gh.factory<_i742.ProfileRepository>(
       () => _i813.ProfileRepositoryImpl(
         localDataSource: gh<_i530.ProfileLocalDataSource>(),
       ),
+    );
+    gh.factory<_i61.BuyCourseCubit>(
+      () => _i61.BuyCourseCubit(gh<_i1047.ApiManager>()),
+    );
+    gh.factory<_i214.BuyChapterCubit>(
+      () => _i214.BuyChapterCubit(gh<_i1047.ApiManager>()),
     );
     gh.factory<_i698.ConfirmCodeDataSource>(
       () => _i307.ConfirmCodeRemoteDataSourceImpl(

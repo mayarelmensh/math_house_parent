@@ -54,7 +54,7 @@ class _LoginScreenState extends State<LoginScreen> {
             posActionName: 'Ok',
             posAction:
                 (){
-              Navigator.of(context).pushReplacementNamed(AppRoutes.homeTab);
+              Navigator.of(context).pushReplacementNamed(AppRoutes.myStudentScreen);
             },
           );
         }
@@ -172,7 +172,6 @@ class _LoginScreenState extends State<LoginScreen> {
                               SizedBox(height: 35.h),
                               // Login Button
                               CustomElevatedButton(
-
                                 text: "Login",
                                 onPressed: () {
                                   loginCubit.login();

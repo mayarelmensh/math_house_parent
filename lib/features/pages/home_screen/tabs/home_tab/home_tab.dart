@@ -18,15 +18,15 @@ class HomeTab extends StatelessWidget {
             crossAxisCount: 2,
             childAspectRatio: 1,
             children: [
-            HomeCard(
+              HomeCard(
             icon: Icons.person,
             title: "Students",
-            subtitle: "Go to select your son",
+            subtitle: "select your son",
             onTap: () {
              Navigator.pushNamed(context, AppRoutes.getStudent);
             },
           ),
-          HomeCard(
+              HomeCard(
             icon: Icons.attach_money,
             title: "Packages ",
             subtitle: "View students",
@@ -34,15 +34,15 @@ class HomeTab extends StatelessWidget {
               Navigator.pushNamed(context, AppRoutes.packagesScreen);
             },
           ),
-          HomeCard(
+              HomeCard(
             icon: Icons.settings,
             title: "Courses",
             subtitle: "go to Courses",
             onTap: () {
-              Navigator.pushNamed(context, AppRoutes.coursesScreen);
+              Navigator.pushNamed(context, AppRoutes.buyCourse);
             },
           ),
-          HomeCard(
+              HomeCard(
             icon: Icons.credit_score,
             title: "Score sheet",
             subtitle: "go to Score sheet",
@@ -50,7 +50,7 @@ class HomeTab extends StatelessWidget {
               Navigator.pushNamed(context, '/messages');
             },
           ),
-          HomeCard(
+              HomeCard(
             icon: Icons.notifications,
             title: "Notifications",
             subtitle: "View alerts",
@@ -73,10 +73,10 @@ class HomeTab extends StatelessWidget {
             },
           ),HomeCard(
             icon: Icons.person,
-            title: "myStudent ",
-            subtitle: "     go to profile   ",
+            title: "payment history ",
+            subtitle: "     go to payment history   ",
             onTap: () {
-              Navigator.pushNamed(context, AppRoutes.myStudentScreen);
+              Navigator.pushNamed(context, AppRoutes.paymentHistory);
             },
           ),
         ]),
