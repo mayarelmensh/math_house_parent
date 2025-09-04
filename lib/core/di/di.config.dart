@@ -89,6 +89,8 @@ import '../../features/pages/courses_screen/cubit/buy_chapter_cubit.dart'
     as _i214;
 import '../../features/pages/courses_screen/cubit/buy_course_cubit.dart'
     as _i61;
+import '../../features/pages/courses_screen/cubit/chapter_data_cubit.dart'
+    as _i598;
 import '../../features/pages/courses_screen/cubit/courses_cubit.dart' as _i91;
 import '../../features/pages/packages_screen/cubit/packages_cubit.dart'
     as _i868;
@@ -153,6 +155,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i542.ScoreSheetCubit>(
       () => _i542.ScoreSheetCubit(gh<_i1047.ApiManager>()),
+    );
+    gh.factory<_i598.ChapterDataCubit>(
+      () => _i598.ChapterDataCubit(gh<_i1047.ApiManager>()),
     );
     gh.factory<_i698.ConfirmCodeDataSource>(
       () => _i307.ConfirmCodeRemoteDataSourceImpl(

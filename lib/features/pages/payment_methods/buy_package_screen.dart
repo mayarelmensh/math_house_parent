@@ -11,7 +11,7 @@ import 'cubit/buy_package_states.dart';
 
 class BuyPackageScreen extends StatefulWidget {
   final int? packageId;
-  final int? paymentMethodId;
+  final dynamic paymentMethodId;
   final String? paymentMethodName;
 
   const BuyPackageScreen({
@@ -29,7 +29,7 @@ class _BuyPackageScreenState extends State<BuyPackageScreen> {
   final buyPackageCubit = getIt<BuyPackageCubit>();
 
   int? packageId;
-  int? paymentMethodId;
+  dynamic paymentMethodId;
   String? paymentMethodName;
 
   File? _invoiceImage;
@@ -43,7 +43,7 @@ class _BuyPackageScreenState extends State<BuyPackageScreen> {
     ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
 
     packageId = widget.packageId ?? args?['packageId'] as int?;
-    paymentMethodId = widget.paymentMethodId ?? args?['paymentMethodId'] as int?;
+    paymentMethodId = widget.paymentMethodId ?? args?['paymentMethodId'] ;
     paymentMethodName = widget.paymentMethodName?.toLowerCase() ??
         (args?['paymentMethodName'] as String?)?.toLowerCase();
 

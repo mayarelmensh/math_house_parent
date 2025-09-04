@@ -15,7 +15,7 @@ class BuyChapterCubit extends Cubit<BuyChapterStates> {
 
   Future<void> buyChapter({
     required int courseId,
-    required int paymentMethodId,
+    required dynamic paymentMethodId,
     required double amount,
     required int userId,
     required int chapterId,

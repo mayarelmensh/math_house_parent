@@ -311,7 +311,9 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
           bloc: paymentMethodsCubit,
           builder: (context, state) {
             if (state is PaymentMethodsLoadingState) {
-              return const Center(child: CircularProgressIndicator());
+              return  Center(child: CircularProgressIndicator(
+                color:AppColors.primaryColor,
+              ));
             } else if (state is PaymentMethodsSuccessState) {
               final methods = [
                 _walletPaymentMethod,

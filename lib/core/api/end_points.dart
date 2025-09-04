@@ -17,5 +17,6 @@ class EndPoints{
   static const String  buyChapter='/parent/courses/buy_chapters';
   static const String  scoreSheetCoursesList='/parent/score_sheet/lists';
   static const String  scoreSheet='/parent/score_sheet?';
+  static const String  chapterData='/parent/courses/chaters_data';
 
 }
