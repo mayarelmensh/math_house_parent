@@ -25,6 +25,7 @@ import 'features/pages/log_out_screen/log_out_screen.dart';
 import 'features/pages/packages_screen/cubit/packages_cubit.dart';
 import 'features/pages/packages_screen/packages_screen.dart';
 import 'features/pages/profile_screen/cubit/profile_screen_cubit.dart';
+import 'features/pages/score_sheet_screen/score_sheet_screen.dart';
 import 'features/pages/students_screen/cubit/students_screen_cubit.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -83,6 +84,7 @@ class MyApp extends StatelessWidget{
             AppRoutes.paymentHistory: (context) => PaymentHistoryScreen(),
             AppRoutes.paymentInvoice: (context) => PaymentInvoiceScreen(),
             AppRoutes.buyCourse: (context) => BuyCourseScreen(),
+            AppRoutes.scoreSheet: (context) => ScoreSheetScreen(),
 
           },
         )

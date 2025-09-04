@@ -17,7 +17,7 @@ class BuyCourseCubit extends Cubit<BuyCourseStates> {
   Future<void> buyPackage({
     required int userId,
     required int courseId,
-    required int paymentMethodId,
+    required dynamic paymentMethodId,
     required double amount,
     required int duration,
     required String image,

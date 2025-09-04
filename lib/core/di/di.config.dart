@@ -102,6 +102,10 @@ import '../../features/pages/payment_methods/cubit/payment_methods_cubit.dart'
     as _i354;
 import '../../features/pages/profile_screen/cubit/profile_screen_cubit.dart'
     as _i314;
+import '../../features/pages/score_sheet_screen/cubit/get_courses_for_score_sheet_cubit.dart'
+    as _i21;
+import '../../features/pages/score_sheet_screen/cubit/score_sheet_cubit.dart'
+    as _i542;
 import '../../features/pages/students_screen/cubit/confirm_code_cubit.dart'
     as _i36;
 import '../../features/pages/students_screen/cubit/send_code_cubit.dart'
@@ -143,6 +147,12 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i214.BuyChapterCubit>(
       () => _i214.BuyChapterCubit(gh<_i1047.ApiManager>()),
+    );
+    gh.factory<_i21.CoursesForScoreSheetCubit>(
+      () => _i21.CoursesForScoreSheetCubit(gh<_i1047.ApiManager>()),
+    );
+    gh.factory<_i542.ScoreSheetCubit>(
+      () => _i542.ScoreSheetCubit(gh<_i1047.ApiManager>()),
     );
     gh.factory<_i698.ConfirmCodeDataSource>(
       () => _i307.ConfirmCodeRemoteDataSourceImpl(

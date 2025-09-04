@@ -47,7 +47,7 @@ class HomeTab extends StatelessWidget {
             title: "Score sheet",
             subtitle: "go to Score sheet",
             onTap: () {
-              Navigator.pushNamed(context, '/messages');
+              Navigator.pushNamed(context, AppRoutes.scoreSheet);
             },
           ),
               HomeCard(

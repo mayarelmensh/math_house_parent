@@ -17,5 +17,6 @@ class AppRoutes {
   static String paymentHistory="/payment_history_screen";
   static String paymentInvoice="/payment_invoice_screen";
   static String buyCourse="/buy_screen_screen";
+  static String scoreSheet="/score_sheet_screen";
 
 }

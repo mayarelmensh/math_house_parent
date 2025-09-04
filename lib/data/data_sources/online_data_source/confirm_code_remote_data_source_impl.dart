@@ -31,7 +31,8 @@ class ConfirmCodeRemoteDataSourceImpl implements ConfirmCodeDataSource{
 
     var response=await apiManager.postData(endPoint: EndPoints.confirmCode,
        options: Options(headers: {
-         'Authorization': 'Bearer $token'}),
+         'Authorization': 'Bearer $token'
+       }),
        body: {
        "code":code
        }
