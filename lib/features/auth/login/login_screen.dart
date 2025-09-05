@@ -7,9 +7,9 @@ import 'package:math_house_parent/features/auth/login/login_cubit/login_cubit.da
 import 'package:math_house_parent/features/auth/login/login_cubit/login_states.dart';
 import 'package:math_house_parent/features/widgets/custom_elevated_button.dart';
 import 'package:math_house_parent/features/widgets/custom_text_form_field.dart';
-import '../../../core/utils/app_colors.dart';
-import '../../../core/utils/dialog_utils.dart';
-import '../../../core/utils/validators.dart';
+import 'package:math_house_parent/core/utils/app_colors.dart';
+import 'package:math_house_parent/core/utils/dialog_utils.dart';
+import 'package:math_house_parent/core/utils/validators.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -19,7 +19,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  LoginCubit loginCubit = getIt<LoginCubit>();
+  final LoginCubit loginCubit = getIt<LoginCubit>();
 
   @override
   void dispose() {
@@ -33,27 +33,26 @@ class _LoginScreenState extends State<LoginScreen> {
       bloc: loginCubit,
       listener: (context, state) {
         if (state is LoginLoadingState) {
-          DialogUtils.showLoading(context: context, message:  'Loading...', );
+          DialogUtils.showLoading(context: context, message: 'Loading...');
         } else if (state is LoginErrorState) {
-          // DialogUtils.hideLoading(context: context);
+          DialogUtils.hideLoading(context);
           DialogUtils.showMessage(
             context: context,
-              message: state.errors.errorMsg,
+            message: state.errors.errorMsg,
             title: 'Error',
             posActionName: 'Ok',
-            posAction: (){
-             DialogUtils.hideLoading(context);
-              }
+            posAction: () {
+              // No need to hide loading again here
+            },
           );
         } else if (state is LoginSuccessState) {
-         // DialogUtils.hideLoading(context: context);
+          DialogUtils.hideLoading(context);
           DialogUtils.showMessage(
             context: context,
-            message:'Login successfully.',
+            message: 'Login successfully.',
             title: 'Success',
             posActionName: 'Ok',
-            posAction:
-                (){
+            posAction: () {
               Navigator.of(context).pushReplacementNamed(AppRoutes.myStudentScreen);
             },
           );
@@ -114,6 +113,16 @@ class _LoginScreenState extends State<LoginScreen> {
                                 keyboardType: TextInputType.emailAddress,
                                 validator: AppValidators.validateEmail,
                                 filledColor: AppColors.white,
+                                textStyle: TextStyle(fontSize: 16.sp),
+                                hintStyle: TextStyle(
+                                  fontSize: 14.sp,
+                                  color: AppColors.grey[500],
+                                ),
+                                // borderRadius: BorderRadius.circular(8.r),
+                                // contentPadding: EdgeInsets.symmetric(
+                                //   horizontal: 16.w,
+                                //   vertical: 12.h,
+                                // ),
                               ),
                               SizedBox(height: 20.h),
                               // Password Field
@@ -130,7 +139,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 borderColor: AppColors.darkGrey,
                                 controller: loginCubit.password,
                                 hintText: "Enter your password",
-                                isObscureText:  loginCubit.isPasswordObscure,
+                                isObscureText: loginCubit.isPasswordObscure,
                                 validator: AppValidators.validatePassword,
                                 filledColor: AppColors.white,
                                 keyboardType: TextInputType.visiblePassword,
@@ -143,8 +152,19 @@ class _LoginScreenState extends State<LoginScreen> {
                                         ? Icons.visibility_off
                                         : Icons.visibility,
                                     color: AppColors.darkGrey,
+                                    size: 20.sp,
                                   ),
                                 ),
+                                textStyle: TextStyle(fontSize: 16.sp),
+                                hintStyle: TextStyle(
+                                  fontSize: 14.sp,
+                                  color: AppColors.grey[500],
+                                ),
+                                // borderRadius: BorderRadius.circular(8.r),
+                                // contentPadding: EdgeInsets.symmetric(
+                                //   horizontal: 16.w,
+                                //   vertical: 12.h,
+                                // ),
                               ),
                               SizedBox(height: 10.h),
                               // Forgot Password Link
@@ -172,44 +192,56 @@ class _LoginScreenState extends State<LoginScreen> {
                               SizedBox(height: 35.h),
                               // Login Button
                               CustomElevatedButton(
-                                text: "Login",
+                                text: state is LoginLoadingState ? 'login......' : 'Login',
                                 onPressed: () {
                                   loginCubit.login();
                                 },
                                 backgroundColor: AppColors.primaryColor,
-                                textStyle: TextStyle(color: AppColors.white),
+                                textStyle: TextStyle(
+                                  color: AppColors.white,
+                                  fontSize: 16.sp,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                // padding: EdgeInsets.symmetric(
+                                //   horizontal: 32.w,
+                                //   vertical: 12.h,
+                                // ),
+                                // borderRadius: BorderRadius.circular(8.r),
                               ),
                               // Register Link
                               Padding(
-                                padding: EdgeInsets.only(
-                                    top: 20.h, bottom: 30.h),
+                                padding: EdgeInsets.symmetric(vertical: 20.h),
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Text(
-                                      textAlign: TextAlign.center,
-                                      overflow: TextOverflow.ellipsis,
-                                      'Don\'t have an account?  ',
+                                      "Don't have an account? ",
                                       style: TextStyle(
-                                        fontSize: 18.sp,
+                                        fontSize: 16.sp,
                                         fontWeight: FontWeight.w500,
                                         color: AppColors.darkGrey,
-                                        decorationColor: AppColors.primaryColor,
                                       ),
                                       maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
-                                    InkWell(child: Text('Sign up',style: TextStyle(
-                                      fontSize: 18.sp,
-                                      fontWeight: FontWeight.w500,
-                                      color: AppColors.primaryColor,
-                                      decoration: TextDecoration.underline,
-                                      decorationColor: AppColors.primaryColor,
-                                    ),),onTap: (){
-                                      Navigator.pushReplacementNamed(
-                                        context,
-                                        AppRoutes.registerRoute,
-                                      );
-                                    }, )
+                                    GestureDetector(
+                                      onTap: () {
+                                        Navigator.pushReplacementNamed(
+                                          context,
+                                          AppRoutes.registerRoute,
+                                        );
+                                      },
+                                      child: Text(
+                                        'Sign up',
+                                        style: TextStyle(
+                                          fontSize: 16.sp,
+                                          fontWeight: FontWeight.w500,
+                                          color: AppColors.primaryColor,
+                                          decoration: TextDecoration.underline,
+                                          decorationColor: AppColors.primaryColor,
+                                        ),
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),

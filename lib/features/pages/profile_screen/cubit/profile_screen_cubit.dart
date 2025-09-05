@@ -17,11 +17,11 @@ class ProfileCubit extends Cubit<ProfileStates> {
       final result = await _profileUseCase.getCached();
       result.fold(
             (failure) {
-          String errorMessage = 'حدث خطأ في تحميل البيانات';
+          String errorMessage = 'An error occurred while loading data';
           if (failure is CacheFailure) {
-            errorMessage = 'لا توجد بيانات محفوظة';
+            errorMessage = 'No cached data available';
           } else if (failure is ServerError) {
-            errorMessage = 'خطأ في الخادم';
+            errorMessage = 'Server error';
           }
           emit(ProfileError(message: errorMessage));
         },
@@ -30,7 +30,7 @@ class ProfileCubit extends Cubit<ProfileStates> {
         },
       );
     } catch (e) {
-      emit(ProfileError(message: 'حدث خطأ غير متوقع'));
+      emit(ProfileError(message: 'An unexpected error occurred'));
     }
   }
 
@@ -38,15 +38,15 @@ class ProfileCubit extends Cubit<ProfileStates> {
   //   try {
   //     final result = await _profileUseCase.clear();
   //     result.fold(
-  //           (failure) {
-  //         emit(ProfileError(message: 'حدث خطأ في مسح البيانات'));
+  //       (failure) {
+  //         emit(ProfileError(message: 'An error occurred while clearing data'));
   //       },
-  //           (_) {
+  //       (_) {
   //         emit(ProfileInitial());
   //       },
   //     );
   //   } catch (e) {
-  //     emit(ProfileError(message: 'حدث خطأ غير متوقع'));
+  //     emit(ProfileError(message: 'An unexpected error occurred'));
   //   }
   // }
 
@@ -55,17 +55,19 @@ class ProfileCubit extends Cubit<ProfileStates> {
       final result = await _profileUseCase.cache(parent);
       result.fold(
             (failure) {
-          emit(ProfileError(message: 'حدث خطأ في حفظ البيانات'));
+          emit(ProfileError(message: 'An error occurred while saving data'));
         },
             (cachedParent) {
           emit(ProfileLoaded(parent: cachedParent));
         },
       );
     } catch (e) {
-      emit(ProfileError(message: 'حدث خطأ غير متوقع'));
+      emit(ProfileError(message: 'An unexpected error occurred'));
     }
   }
-  //
+}
+
+//
   // void addStudentLocally(StudentsLoginEntity student) {
   //   if (state is ProfileLoaded) {
   //     final currentParent = (state as ProfileLoaded).parent;
@@ -89,5 +91,5 @@ class ProfileCubit extends Cubit<ProfileStates> {
   //         (updatedParent) => emit(ProfileLoaded(parent: updatedParent)),
   //   );
   // }
-}
+
 

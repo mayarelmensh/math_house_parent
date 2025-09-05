@@ -3,7 +3,8 @@ import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 import 'package:math_house_parent/core/api/api_manager.dart';
 import 'package:math_house_parent/core/api/end_points.dart';
-import 'package:math_house_parent/core/cache/shared_preferences_utils.dart';
+
+import '../../../../core/cache/shared_preferences_utils.dart';
 import '../../../../data/models/buy_chapter_model.dart';
 import 'buy_chapter_states.dart';
 
@@ -14,11 +15,11 @@ class BuyChapterCubit extends Cubit<BuyChapterStates> {
   BuyChapterCubit(this.apiManager) : super(BuyChapterInitialState());
 
   Future<void> buyChapter({
-    required int courseId,
-    required dynamic paymentMethodId,
-    required double amount,
     required int userId,
+    required int courseId,
     required int chapterId,
+    required dynamic paymentMethodId,
+    required dynamic amount,
     required int duration,
     required String image,
   }) async {
@@ -30,37 +31,46 @@ class BuyChapterCubit extends Cubit<BuyChapterStates> {
         return;
       }
 
-      // Prepare the request body
-      final body = FormData.fromMap({
-        'course_id': courseId,
-        'payment_method_id': paymentMethodId,
-        'amount': amount.toInt(), // Convert to int to match API expectation
-        'user_id': userId,
-        'chapters[0][chapter_id]': chapterId,
-        'chapters[0][duration]': duration,
-      });
-
-      if (image != 'wallet') {
-        body.files.add(MapEntry(
-          'image',
-          await MultipartFile.fromFile(image),
-        ));
+      // تحضير الـ image data بناءً على نوع الدفع
+      String imageData;
+      if (image == 'wallet') {
+        imageData = 'wallet';
       } else {
-        body.fields.add(const MapEntry('image', 'wallet'));
+        // إذا كان Base64، تحقق من وجود الـ prefix أو لا
+        if (image.startsWith('data:image/')) {
+          imageData = image; // الـ prefix موجود بالفعل
+        } else {
+          imageData = 'data:image/jpeg;base64,$image'; // أضف الـ prefix
+        }
       }
 
+      // Prepare the request body
+      final body = {
+        'course_id': courseId,
+        'chapters': [
+          {
+            'chapter_id': chapterId,
+            'duration': duration,
+          }
+        ],
+        'payment_method_id': paymentMethodId,
+        'amount': amount,
+        'user_id': userId,
+        'image': imageData,
+      };
+
       // Log the request for debugging
-      print('BuyChapter Request: ${body.fields}');
+      print('BuyChapter Request: $body');
       print('Headers: {Authorization: Bearer $token}');
 
       final response = await apiManager.postData(
-        endPoint: EndPoints.buyChapter,
+        endPoint: EndPoints.buyChapter, // تأكد من الـ endpoint الصحيح
         body: body,
         options: Options(
           headers: {'Authorization': 'Bearer $token'},
         ),
       );
-
+      print('Response data: ${response.data}');
       final buyChapterResponse = BuyChapterModel.fromJson(response.data);
       emit(BuyChapterSuccessState(buyChapterResponse));
     } catch (e) {

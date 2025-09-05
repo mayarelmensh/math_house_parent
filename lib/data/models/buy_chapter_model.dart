@@ -1,7 +1,7 @@
 class BuyChapterModel {
-  final String? price;
-  final String? paymentMethod;
-  final List<ChapterModel>? chapters;
+  final int? price;
+  final dynamic paymentMethod;
+  final List<Chapter>? chapters;
 
   BuyChapterModel({
     this.price,
@@ -9,45 +9,40 @@ class BuyChapterModel {
     this.chapters,
   });
 
-  BuyChapterModel.fromJson(Map<String, dynamic> json)
-      : price = json['price']?.toString(),
-        paymentMethod = json['p_method'],
-        chapters = (json['chapters'] as List<dynamic>?)
-            ?.map((v) => ChapterModel.fromJson(v))
-            .toList();
-
-  Map<String, dynamic> toJson() {
-    return {
-      'price': price,
-      'p_method': paymentMethod,
-      'chapters': chapters?.map((v) => v.toJson()).toList(),
-    };
+  factory BuyChapterModel.fromJson(Map<String, dynamic> json) {
+    return BuyChapterModel(
+      price: json['price'] is int ? json['price'] : int.tryParse(json['price'].toString()),
+      paymentMethod: json['p_method'],
+      chapters: (json['chapters'] as List<dynamic>?)
+          ?.map((e) => Chapter.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
   }
 }
 
-class ChapterModel {
+class Chapter {
   final int? id;
   final String? chapterName;
   final int? courseId;
-  final int? currencyId;
-  final String? description;
-  final String? chapterUrl;
+  final int? currancyId;
+  final String? chDes;
+  final String? chUrl;
   final String? preRequisition;
   final String? gain;
   final int? teacherId;
   final String? createdAt;
   final String? updatedAt;
   final String? type;
-  final String? duration;
-  final List<ChapterPriceModel>? prices;
+  final int? duration;
+  final List<ChapterPrice>? price;
 
-  ChapterModel({
+  Chapter({
     this.id,
     this.chapterName,
     this.courseId,
-    this.currencyId,
-    this.description,
-    this.chapterUrl,
+    this.currancyId,
+    this.chDes,
+    this.chUrl,
     this.preRequisition,
     this.gain,
     this.teacherId,
@@ -55,48 +50,32 @@ class ChapterModel {
     this.updatedAt,
     this.type,
     this.duration,
-    this.prices,
+    this.price,
   });
 
-  ChapterModel.fromJson(Map<String, dynamic> json)
-      : id = json['id'],
-        chapterName = json['chapter_name'],
-        courseId = json['course_id'],
-        currencyId = json['currancy_id'],
-        description = json['ch_des'],
-        chapterUrl = json['ch_url'],
-        preRequisition = json['pre_requisition'],
-        gain = json['gain'],
-        teacherId = json['teacher_id'],
-        createdAt = json['created_at'],
-        updatedAt = json['updated_at'],
-        type = json['type'],
-        duration = json['duration'],
-        prices = (json['price'] as List<dynamic>?)
-            ?.map((v) => ChapterPriceModel.fromJson(v))
-            .toList();
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'chapter_name': chapterName,
-      'course_id': courseId,
-      'currancy_id': currencyId,
-      'ch_des': description,
-      'ch_url': chapterUrl,
-      'pre_requisition': preRequisition,
-      'gain': gain,
-      'teacher_id': teacherId,
-      'created_at': createdAt,
-      'updated_at': updatedAt,
-      'type': type,
-      'duration': duration,
-      'price': prices?.map((v) => v.toJson()).toList(),
-    };
+  factory Chapter.fromJson(Map<String, dynamic> json) {
+    return Chapter(
+      id: json['id'],
+      chapterName: json['chapter_name']?.toString(),
+      courseId: json['course_id'],
+      currancyId: json['currancy_id'],
+      chDes: json['ch_des']?.toString(),
+      chUrl: json['ch_url']?.toString(),
+      preRequisition: json['pre_requisition']?.toString(),
+      gain: json['gain']?.toString(),
+      teacherId: json['teacher_id'],
+      createdAt: json['created_at']?.toString(),
+      updatedAt: json['updated_at']?.toString(),
+      type: json['type']?.toString(),
+      duration: json['duration'],
+      price: (json['price'] as List<dynamic>?)
+          ?.map((e) => ChapterPrice.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
   }
 }
 
-class ChapterPriceModel {
+class ChapterPrice {
   final int? id;
   final int? duration;
   final int? price;
@@ -105,7 +84,7 @@ class ChapterPriceModel {
   final String? createdAt;
   final String? updatedAt;
 
-  ChapterPriceModel({
+  ChapterPrice({
     this.id,
     this.duration,
     this.price,
@@ -115,24 +94,15 @@ class ChapterPriceModel {
     this.updatedAt,
   });
 
-  ChapterPriceModel.fromJson(Map<String, dynamic> json)
-      : id = json['id'],
-        duration = json['duration'],
-        price = json['price'],
-        discount = json['discount'],
-        chapterId = json['chapter_id'],
-        createdAt = json['created_at'],
-        updatedAt = json['updated_at'];
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'duration': duration,
-      'price': price,
-      'discount': discount,
-      'chapter_id': chapterId,
-      'created_at': createdAt,
-      'updated_at': updatedAt,
-    };
+  factory ChapterPrice.fromJson(Map<String, dynamic> json) {
+    return ChapterPrice(
+      id: json['id'],
+      duration: json['duration'],
+      price: json['price'], // int
+      discount: json['discount'],
+      chapterId: json['chapter_id'],
+      createdAt: json['created_at']?.toString(),
+      updatedAt: json['updated_at']?.toString(),
+    );
   }
 }

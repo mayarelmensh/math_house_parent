@@ -2,17 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:math_house_parent/features/auth/forget_password_screen/forget_password_screen.dart';
-import 'package:math_house_parent/features/pages/courses_screen/courses_screen.dart';
 import 'package:math_house_parent/features/pages/courses_screen/cubit/courses_cubit.dart';
 import 'package:math_house_parent/features/pages/home_screen/tabs/home_tab/home_tab.dart';
+import 'package:math_house_parent/features/pages/my_courses_screen/my_courses_screen.dart';
+import 'package:math_house_parent/features/pages/my_packages_screen/my_packages_screen.dart';
+import 'package:math_house_parent/features/pages/notifications_screen/notofications_screen.dart';
 import 'package:math_house_parent/features/pages/payment_history/payment_history_screen.dart';
 import 'package:math_house_parent/features/pages/payment_invoice/payment_invoice_screen.dart';
 import 'package:math_house_parent/features/pages/payment_methods/buy_package_screen.dart';
 import 'package:math_house_parent/features/pages/payment_methods/payment_methods_screen.dart';
 import 'package:math_house_parent/features/pages/profile_screen/profile_screen.dart';
+import 'package:math_house_parent/features/pages/recharge_wallet_screen/recharge_wallet_screen.dart';
 import 'package:math_house_parent/features/pages/students_screen/my_students_screen.dart';
 import 'package:math_house_parent/features/pages/students_screen/students_screen.dart';
 import 'package:math_house_parent/features/pages/students_screen/confirmation_screen.dart';
+import 'package:math_house_parent/features/pages/wallet_history/wallet_history_screen.dart';
 import 'core/cache/shared_preferences_utils.dart';
 import 'core/di/di.dart';
 import 'core/utils/app_routes.dart';
@@ -85,6 +89,11 @@ class MyApp extends StatelessWidget{
             AppRoutes.paymentInvoice: (context) => PaymentInvoiceScreen(),
             AppRoutes.buyCourse: (context) => BuyCourseScreen(),
             AppRoutes.scoreSheet: (context) => ScoreSheetScreen(),
+            AppRoutes.rechargeWallet: (context) => WalletRechargeScreen(),
+            AppRoutes.walletHistory: (context) => WalletHistoryScreen(),
+            AppRoutes.myPackagesScreen: (context) => MyPackageScreen(),
+            AppRoutes.notificationsScreen: (context) => NotificationScreen(),
+            AppRoutes.myCourse: (context) => MyCoursesScreen(),
 
           },
         )

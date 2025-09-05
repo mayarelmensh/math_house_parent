@@ -30,6 +30,19 @@ class BuyCourseCubit extends Cubit<BuyCourseStates> {
         return;
       }
 
+      // تحضير الـ image data بناءً على نوع الدفع
+      String imageData;
+      if (image == 'wallet') {
+        imageData = 'wallet';
+      } else {
+        // إذا كان Base64، تحقق من وجود الـ prefix أو لا
+        if (image.startsWith('data:image/')) {
+          imageData = image; // الـ prefix موجود بالفعل
+        } else {
+          imageData = 'data:image/jpeg;base64,$image'; // أضف الـ prefix
+        }
+      }
+
       // Prepare the request body
       final body = {
         'course_id': courseId,
@@ -37,7 +50,7 @@ class BuyCourseCubit extends Cubit<BuyCourseStates> {
         'amount': amount.toInt(), // Convert to int to match API expectation
         'user_id': userId,
         'duration': duration,
-        'image': image,
+        'image': imageData,
       };
 
       // Log the request for debugging

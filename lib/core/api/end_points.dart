@@ -18,5 +18,11 @@ class EndPoints{
   static const String  scoreSheetCoursesList='/parent/score_sheet/lists';
   static const String  scoreSheet='/parent/score_sheet?';
   static const String  chapterData='/parent/courses/chaters_data';
+  static const String  rechargeWallet='/parent/wallet_payment/recharge';
+  static const String  walletHistory='/parent/wallet_payment/history';
+  static const String  myCourses ='/parent/my_courses';
+  static const String  myPackages ='/parent/packages/my_packages';
+  static const String  notifications ='/parent/notification';
+  static const String  promoCode ='/parent/courses/use_promocode';
 
 }

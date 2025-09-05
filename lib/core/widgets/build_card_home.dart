@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:math' as math;
-
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:math_house_parent/core/utils/app_colors.dart';
 
 class HomeCard extends StatefulWidget {
@@ -91,14 +91,18 @@ class _HomeCardState extends State<HomeCard> with TickerProviderStateMixin {
       CurvedAnimation(parent: _mainController, curve: Curves.easeOut),
     );
 
-    _slideAnimation = Tween<Offset>(begin: const Offset(0, 0.02), end: Offset.zero)
-        .animate(CurvedAnimation(parent: _mainController, curve: Curves.fastOutSlowIn));
+    _slideAnimation = Tween<Offset>(
+      begin: Offset(0, 0.02.h),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _mainController, curve: Curves.fastOutSlowIn));
 
-    _rotationAnimation =
-        Tween<double>(begin: 0.0, end: 0.05).animate(CurvedAnimation(parent: _mainController, curve: Curves.elasticOut));
+    _rotationAnimation = Tween<double>(begin: 0.0, end: 0.05).animate(
+      CurvedAnimation(parent: _mainController, curve: Curves.elasticOut),
+    );
 
-    _pulseAnimation = Tween<double>(begin: 0.95, end: 1.0)
-        .animate(CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut));
+    _pulseAnimation = Tween<double>(begin: 0.95, end: 1.0).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
   }
 
   @override
@@ -141,14 +145,18 @@ class _HomeCardState extends State<HomeCard> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final size = MediaQuery.of(context).size;
-
     final isTablet = size.width > 600;
 
-    final cardPadding = isTablet ? 28.0 : 20.0;
-    final iconSize = isTablet ? 48.0 : 40.0;
-    final titleSize = isTablet ? 18.0 : 16.0;
-    final subtitleSize = isTablet ? 14.0 : 12.0;
-    final borderRadius = isTablet ? 24.0 : 20.0;
+    // Responsive sizing using ScreenUtil
+    final cardPadding = isTablet ? 28.w : 20.w;
+    final iconSize = isTablet ? 48.sp : 40.sp;
+    final titleSize = isTablet ? 18.sp : 16.sp;
+    final subtitleSize = isTablet ? 14.sp : 12.sp;
+    final borderRadius = isTablet ? 24.r : 20.r;
+    final particleSize = isTablet ? 4.w : 3.w;
+    final particleRadius = isTablet ? 40.w : 30.w;
+    final shadowBlur = isTablet ? 12.r : 8.r;
+    final shadowSpread = isTablet ? 2.r : 1.r;
 
     final primaryColor = widget.primaryColor ?? AppColors.primaryColor;
     final accentColor = widget.accentColor ?? const Color(0xFFEFA947);
@@ -169,26 +177,26 @@ class _HomeCardState extends State<HomeCard> with TickerProviderStateMixin {
                 onTapUp: (_) => _onTapUp(),
                 onTapCancel: () => _onTapCancel(),
                 child: Container(
-                  margin: const EdgeInsets.all(8),
+                  margin: EdgeInsets.all(8.w), // Responsive margin
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(borderRadius),
                     boxShadow: [
                       BoxShadow(
                         color: primaryColor.withOpacity(0.03),
                         blurRadius: _elevationAnimation.value,
-                        spreadRadius: 2,
+                        spreadRadius: shadowSpread,
                         offset: Offset(0, _elevationAnimation.value / 3),
                       ),
                       if (widget.enableGlow)
                         BoxShadow(
                           color: primaryColor.withOpacity(_glowAnimation.value * 0.1),
                           blurRadius: _elevationAnimation.value * 1.5,
-                          spreadRadius: _isHovered ? 4 : 0,
+                          spreadRadius: _isHovered ? 4.r : 0,
                         ),
                       BoxShadow(
                         color: Colors.white.withOpacity(0.1),
-                        blurRadius: 10,
-                        offset: const Offset(-2, -2),
+                        blurRadius: shadowBlur,
+                        offset: Offset(-2.w, -2.h),
                       ),
                     ],
                   ),
@@ -197,9 +205,18 @@ class _HomeCardState extends State<HomeCard> with TickerProviderStateMixin {
                     child: Stack(
                       children: [
                         _buildBackground(primaryColor, accentColor, surfaceColor),
-                        if (widget.enableParticles) _buildParticles(primaryColor, isTablet),
+                        if (widget.enableParticles)
+                          _buildParticles(primaryColor, particleSize, particleRadius),
                         _buildGlassOverlay(borderRadius),
-                        _buildContent(cardPadding, iconSize, titleSize, subtitleSize, primaryColor, accentColor, isTablet),
+                        _buildContent(
+                          cardPadding,
+                          iconSize,
+                          titleSize,
+                          subtitleSize,
+                          primaryColor,
+                          accentColor,
+                          isTablet,
+                        ),
                         _buildRippleEffect(borderRadius),
                       ],
                     ),
@@ -231,7 +248,7 @@ class _HomeCardState extends State<HomeCard> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildParticles(Color color, bool isTablet) {
+  Widget _buildParticles(Color color, double particleSize, double particleRadius) {
     return AnimatedBuilder(
       animation: _particlesController,
       builder: (context, child) {
@@ -239,27 +256,26 @@ class _HomeCardState extends State<HomeCard> with TickerProviderStateMixin {
           children: List.generate(8, (index) {
             final progress = (_particlesController.value + index * 0.125) % 1.0;
             final angle = progress * 2 * math.pi;
-            final radius = 30 + (index * 8);
+            final radius = particleRadius + (index * 8.w);
             final x = math.cos(angle) * radius;
             final y = math.sin(angle) * radius;
-            final size = isTablet ? 4.0 : 3.0;
 
             return Positioned(
-              left: 50 + x,
-              top: 50 + y,
+              left: (50.w + x).clamp(0, MediaQuery.of(context).size.width),
+              top: (50.h + y).clamp(0, MediaQuery.of(context).size.height),
               child: Transform.scale(
                 scale: math.sin(progress * math.pi),
                 child: Container(
-                  width: size,
-                  height: size,
+                  width: particleSize,
+                  height: particleSize,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: color.withOpacity(0.2 * math.sin(progress * math.pi)),
                     boxShadow: [
                       BoxShadow(
                         color: color.withOpacity(0.1),
-                        blurRadius: 4,
-                        spreadRadius: 1,
+                        blurRadius: 4.r,
+                        spreadRadius: 1.r,
                       ),
                     ],
                   ),
@@ -278,7 +294,7 @@ class _HomeCardState extends State<HomeCard> with TickerProviderStateMixin {
         borderRadius: BorderRadius.circular(borderRadius),
         border: Border.all(
           color: Colors.white.withOpacity(_isHovered ? 0.3 : 0.15),
-          width: 1.5,
+          width: 1.5.w,
         ),
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -317,8 +333,8 @@ class _HomeCardState extends State<HomeCard> with TickerProviderStateMixin {
                   child: Transform.rotate(
                     angle: _rotationAnimation.value,
                     child: Container(
-                      width: iconSize + 16,
-                      height: iconSize + 16,
+                      width: iconSize + 16.w,
+                      height: iconSize + 16.h,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         gradient: RadialGradient(
@@ -331,8 +347,8 @@ class _HomeCardState extends State<HomeCard> with TickerProviderStateMixin {
                         boxShadow: [
                           BoxShadow(
                             color: primaryColor.withOpacity(0.2),
-                            blurRadius: 12,
-                            spreadRadius: 2,
+                            blurRadius: 12.r,
+                            spreadRadius: 2.r,
                           ),
                         ],
                       ),
@@ -342,65 +358,69 @@ class _HomeCardState extends State<HomeCard> with TickerProviderStateMixin {
                 );
               },
             ),
-            SizedBox(height: isTablet ? 20 : 16),
+            SizedBox(height: isTablet ? 20.h : 16.h),
             AnimatedBuilder(
               animation: _textScaleAnimation,
               builder: (context, child) {
                 return Transform.scale(
                   scale: _textScaleAnimation.value,
-                  child: Text(
-                    widget.title,
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: titleSize,
-                      fontWeight: FontWeight.w700,
-                      color: primaryColor,
-                      letterSpacing: 0.5,
-                      height: 1.2,
-                      shadows: [
-                        Shadow(
-                          color: primaryColor.withOpacity(0.2),
-                          offset: const Offset(0, 1),
-                          blurRadius: 3,
-                        ),
-                      ],
+                  child: Center(
+                    child: Text(
+                      widget.title,
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: titleSize,
+                        fontWeight: FontWeight.w700,
+                        color: primaryColor,
+                        letterSpacing: 0.5,
+                        height: 1.2,
+                        shadows: [
+                          Shadow(
+                            color: primaryColor.withOpacity(0.2),
+                            offset: Offset(0, 1.h),
+                            blurRadius: 3.r,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 );
               },
             ),
             if (widget.subtitle != null) ...[
-              SizedBox(height: isTablet ? 8 : 6),
-              Text(
-                widget.subtitle!,
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: subtitleSize,
-                  fontWeight: FontWeight.w500,
-                  color: accentColor.withOpacity(0.8),
-                  letterSpacing: 0.3,
+              SizedBox(height: isTablet ? 8.h : 6.h),
+              Center(
+                child: Text(
+                  widget.subtitle!,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: subtitleSize,
+                    fontWeight: FontWeight.w500,
+                    color: accentColor.withOpacity(0.8),
+                    letterSpacing: 0.3,
+                  ),
                 ),
               ),
             ],
-            SizedBox(height: isTablet ? 16 : 12),
+            SizedBox(height: isTablet ? 16.h : 12.h),
             AnimatedContainer(
               duration: const Duration(milliseconds: 300),
-              width: _isHovered ? 60 : 40,
-              height: 3,
+              width: _isHovered ? 60.w : 40.w,
+              height: 3.h,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(2),
+                borderRadius: BorderRadius.circular(2.r),
                 gradient: LinearGradient(
                   colors: [primaryColor, accentColor, Colors.white.withOpacity(0.8)],
                 ),
                 boxShadow: [
                   BoxShadow(
                     color: primaryColor.withOpacity(0.4),
-                    blurRadius: 6,
-                    spreadRadius: 1,
+                    blurRadius: 6.r,
+                    spreadRadius: 1.r,
                   ),
                 ],
               ),
@@ -418,10 +438,9 @@ class _HomeCardState extends State<HomeCard> with TickerProviderStateMixin {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(borderRadius),
-          color: Colors.white,
+          color: Colors.white.withOpacity(0.3),
         ),
       ),
     );
   }
 }
-

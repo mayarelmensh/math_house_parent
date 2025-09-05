@@ -92,6 +92,12 @@ import '../../features/pages/courses_screen/cubit/buy_course_cubit.dart'
 import '../../features/pages/courses_screen/cubit/chapter_data_cubit.dart'
     as _i598;
 import '../../features/pages/courses_screen/cubit/courses_cubit.dart' as _i91;
+import '../../features/pages/my_courses_screen/cuibt/my_courses_cuibt.dart'
+    as _i348;
+import '../../features/pages/my_packages_screen/cubit/my_package_cubit.dart'
+    as _i647;
+import '../../features/pages/notifications_screen/cubit/notifications_cuibt.dart'
+    as _i170;
 import '../../features/pages/packages_screen/cubit/packages_cubit.dart'
     as _i868;
 import '../../features/pages/payment_history/cubit/payment_history_cubit.dart'
@@ -104,6 +110,8 @@ import '../../features/pages/payment_methods/cubit/payment_methods_cubit.dart'
     as _i354;
 import '../../features/pages/profile_screen/cubit/profile_screen_cubit.dart'
     as _i314;
+import '../../features/pages/recharge_wallet_screen/cuibt/recharge_wallet_cubit.dart'
+    as _i379;
 import '../../features/pages/score_sheet_screen/cubit/get_courses_for_score_sheet_cubit.dart'
     as _i21;
 import '../../features/pages/score_sheet_screen/cubit/score_sheet_cubit.dart'
@@ -114,6 +122,8 @@ import '../../features/pages/students_screen/cubit/send_code_cubit.dart'
     as _i1019;
 import '../../features/pages/students_screen/cubit/students_screen_cubit.dart'
     as _i89;
+import '../../features/pages/wallet_history/cubit/wallet_history_cubit.dart'
+    as _i744;
 import '../api/api_manager.dart' as _i1047;
 
 extension GetItInjectableX on _i174.GetIt {
@@ -144,11 +154,17 @@ extension GetItInjectableX on _i174.GetIt {
         localDataSource: gh<_i530.ProfileLocalDataSource>(),
       ),
     );
+    gh.factory<_i214.BuyChapterCubit>(
+      () => _i214.BuyChapterCubit(gh<_i1047.ApiManager>()),
+    );
     gh.factory<_i61.BuyCourseCubit>(
       () => _i61.BuyCourseCubit(gh<_i1047.ApiManager>()),
     );
-    gh.factory<_i214.BuyChapterCubit>(
-      () => _i214.BuyChapterCubit(gh<_i1047.ApiManager>()),
+    gh.factory<_i598.ChapterDataCubit>(
+      () => _i598.ChapterDataCubit(gh<_i1047.ApiManager>()),
+    );
+    gh.factory<_i379.WalletRechargeCubit>(
+      () => _i379.WalletRechargeCubit(gh<_i1047.ApiManager>()),
     );
     gh.factory<_i21.CoursesForScoreSheetCubit>(
       () => _i21.CoursesForScoreSheetCubit(gh<_i1047.ApiManager>()),
@@ -156,8 +172,17 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i542.ScoreSheetCubit>(
       () => _i542.ScoreSheetCubit(gh<_i1047.ApiManager>()),
     );
-    gh.factory<_i598.ChapterDataCubit>(
-      () => _i598.ChapterDataCubit(gh<_i1047.ApiManager>()),
+    gh.factory<_i744.WalletHistoryCubit>(
+      () => _i744.WalletHistoryCubit(gh<_i1047.ApiManager>()),
+    );
+    gh.factory<_i348.MyCoursesCubit>(
+      () => _i348.MyCoursesCubit(gh<_i1047.ApiManager>()),
+    );
+    gh.factory<_i647.MyPackageCubit>(
+      () => _i647.MyPackageCubit(gh<_i1047.ApiManager>()),
+    );
+    gh.factory<_i170.NotificationCubit>(
+      () => _i170.NotificationCubit(gh<_i1047.ApiManager>()),
     );
     gh.factory<_i698.ConfirmCodeDataSource>(
       () => _i307.ConfirmCodeRemoteDataSourceImpl(

@@ -7,9 +7,9 @@ import 'package:math_house_parent/features/auth/register/register_cubit/register
 import 'package:math_house_parent/features/auth/register/register_cubit/register_states.dart';
 import 'package:math_house_parent/features/widgets/custom_elevated_button.dart';
 import 'package:math_house_parent/features/widgets/custom_text_form_field.dart';
-import '../../../core/utils/app_colors.dart';
-import '../../../core/utils/dialog_utils.dart';
-import '../../../core/utils/validators.dart';
+import 'package:math_house_parent/core/utils/app_colors.dart';
+import 'package:math_house_parent/core/utils/dialog_utils.dart';
+import 'package:math_house_parent/core/utils/validators.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -19,7 +19,7 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-   RegisterCubit registerCubit = getIt<RegisterCubit>();
+  final RegisterCubit registerCubit = getIt<RegisterCubit>();
 
   @override
   void dispose() {
@@ -33,29 +33,30 @@ class _RegisterScreenState extends State<RegisterScreen> {
       bloc: registerCubit,
       listener: (context, state) {
         if (state is RegisterLoadingState) {
-          DialogUtils.showLoading(context: context,  message:  'Loading...');
+          DialogUtils.showLoading(context: context, message: 'Loading...');
         } else if (state is RegisterErrorState) {
           DialogUtils.hideLoading(context);
           DialogUtils.showMessage(
             context: context,
-           message:  state.errors.errorMsg,
+            message: state.errors.errorMsg,
             title: 'Error',
             posActionName: 'Ok',
+            posAction: () => Navigator.pop(context),
           );
         } else if (state is RegisterSuccessState) {
-          DialogUtils.hideLoading( context);
+          DialogUtils.hideLoading(context);
           DialogUtils.showMessage(
             context: context,
             message: 'Register successfully.',
             title: 'Success',
             posActionName: 'Ok',
             posAction: () {
-              Navigator.of(context).pushReplacementNamed(AppRoutes.homeRoute);
+              Navigator.of(context).pushReplacementNamed(AppRoutes.myStudentScreen);
             },
           );
         }
       },
-      builder:(context,state) {
+      builder: (context, state) {
         return Scaffold(
           backgroundColor: AppColors.white,
           body: SingleChildScrollView(
@@ -80,7 +81,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ),
                 ),
-
                 // Form Section
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -111,9 +111,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 keyboardType: TextInputType.name,
                                 validator: AppValidators.validateFullName,
                                 filledColor: AppColors.white,
+                                textStyle: TextStyle(fontSize: 16.sp),
+                                hintStyle: TextStyle(
+                                  fontSize: 14.sp,
+                                  color: AppColors.grey[500],
+                                ),
+                                // borderRadius: BorderRadius.circular(8.r),
+                                // contentPadding: EdgeInsets.symmetric(
+                                //   horizontal: 16.w,
+                                //   vertical: 12.h,
+                                // ),
                               ),
                               SizedBox(height: 20.h),
-
                               // Mobile Number Field
                               Text(
                                 "Mobile Number",
@@ -131,9 +140,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 keyboardType: TextInputType.phone,
                                 validator: AppValidators.validatePhoneNumber,
                                 filledColor: AppColors.white,
+                                textStyle: TextStyle(fontSize: 16.sp),
+                                hintStyle: TextStyle(
+                                  fontSize: 14.sp,
+                                  color: AppColors.grey[500],
+                                ),
+                                // borderRadius: BorderRadius.circular(8.r),
+                                // contentPadding: EdgeInsets.symmetric(
+                                //   horizontal: 16.w,
+                                //   vertical: 12.h,
+                                // ),
                               ),
                               SizedBox(height: 20.h),
-
                               // Email Field
                               Text(
                                 "E-mail address",
@@ -151,9 +169,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 keyboardType: TextInputType.emailAddress,
                                 validator: AppValidators.validateEmail,
                                 filledColor: AppColors.white,
+                                textStyle: TextStyle(fontSize: 16.sp),
+                                hintStyle: TextStyle(
+                                  fontSize: 14.sp,
+                                  color: AppColors.grey[500],
+                                ),
+                                // borderRadius: BorderRadius.circular(8.r),
+                                // contentPadding: EdgeInsets.symmetric(
+                                //   horizontal: 16.w,
+                                //   vertical: 12.h,
+                                // ),
                               ),
                               SizedBox(height: 20.h),
-
                               // Password Field
                               Text(
                                 "Password",
@@ -177,16 +204,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     registerCubit.changePasswordVisibility("password");
                                   },
                                   icon: Icon(
-                                    registerCubit.passwordVisibility["password"]==true
-                                        ? Icons.visibility_off
-                                        : Icons.visibility,
+                                    registerCubit.passwordVisibility["password"] == true
+                                        ? Icons.visibility
+                                        : Icons.visibility_off,
                                     color: AppColors.darkGrey,
+                                    size: 20.sp,
                                   ),
                                 ),
+                                textStyle: TextStyle(fontSize: 16.sp),
+                                hintStyle: TextStyle(
+                                  fontSize: 14.sp,
+                                  color: AppColors.grey[500],
+                                ),
+                                // borderRadius: BorderRadius.circular(8.r),
+                                // contentPadding: EdgeInsets.symmetric(
+                                //   horizontal: 16.w,
+                                //   vertical: 12.h,
+                                // ),
                               ),
                               SizedBox(height: 20.h),
-
-                              // Re-Password Field
+                              // Confirm Password Field
                               Text(
                                 "Confirm Password",
                                 style: TextStyle(
@@ -199,68 +236,91 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               CustomTextFormField(
                                 borderColor: AppColors.darkGrey,
                                 controller: registerCubit.confPassword,
-                                hintText: "repeat your password",
-                                isObscureText:  !(registerCubit.passwordVisibility["rePassword"] ?? false),
-                                validator: (value) =>
-                                    AppValidators.validateConfirmPassword(
-                                      value,
-                                      registerCubit.password.text,
-                                    ),
+                                hintText: "Repeat your password",
+                                isObscureText: !(registerCubit.passwordVisibility["rePassword"] ?? false),
+                                validator: (value) => AppValidators.validateConfirmPassword(
+                                  value,
+                                  registerCubit.password.text,
+                                ),
                                 filledColor: AppColors.white,
+                                keyboardType: TextInputType.visiblePassword,
                                 suffixIcon: IconButton(
                                   onPressed: () {
                                     registerCubit.changePasswordVisibility("rePassword");
                                   },
                                   icon: Icon(
-                                    registerCubit.passwordVisibility["rePassword"]==true
-                                        ? Icons.visibility_off
-                                        : Icons.visibility,
+                                    registerCubit.passwordVisibility["rePassword"] == true
+                                        ? Icons.visibility
+                                        : Icons.visibility_off,
                                     color: AppColors.darkGrey,
+                                    size: 20.sp,
                                   ),
                                 ),
+                                textStyle: TextStyle(fontSize: 16.sp),
+                                hintStyle: TextStyle(
+                                  fontSize: 14.sp,
+                                  color: AppColors.grey[500],
+                                ),
+                                // borderRadius: BorderRadius.circular(8.r),
+                                // contentPadding: EdgeInsets.symmetric(
+                                //   horizontal: 16.w,
+                                //   vertical: 12.h,
+                                // ),
                               ),
                               SizedBox(height: 35.h),
                               // Sign Up Button
                               CustomElevatedButton(
-                                text: "Sign up",
+                                text: state is RegisterLoadingState ? 'sign up......' : 'Sign up',
                                 onPressed: () {
                                   registerCubit.register();
                                 },
                                 backgroundColor: AppColors.primaryColor,
-                                textStyle: TextStyle(color: AppColors.white),
+                                textStyle: TextStyle(
+                                  color: AppColors.white,
+                                  fontSize: 16.sp,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                // padding: EdgeInsets.symmetric(
+                                //   horizontal: 32.w,
+                                //   vertical: 12.h,
+                                // ),
+                                // borderRadius: BorderRadius.circular(8.r),
                               ),
-
                               // Login Link
                               Padding(
-                                padding: EdgeInsets.only(
-                                    top: 30.h, bottom: 30.h),
-                                child: GestureDetector(
-                                  onTap: () {
-                                    Navigator.pushReplacementNamed(
-                                      context,
-                                      AppRoutes.loginRoute,
-                                    );
-                                  },
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          textAlign: TextAlign.center,
-                                          overflow: TextOverflow.ellipsis,
-                                          'Already have an account?',
-                                          style: TextStyle(
-                                            fontSize: 18.sp,
-                                            fontWeight: FontWeight.w500,
-                                            color: AppColors.primaryColor,
-                                            decoration: TextDecoration
-                                                .underline,
-                                            decorationColor: AppColors.white,
-                                          ),
-                                          maxLines: 1,
+                                padding: EdgeInsets.symmetric(vertical: 30.h),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      "Already have an account? ",
+                                      style: TextStyle(
+                                        fontSize: 16.sp,
+                                        fontWeight: FontWeight.w500,
+                                        color: AppColors.darkGrey,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    GestureDetector(
+                                      onTap: () {
+                                        Navigator.pushReplacementNamed(
+                                          context,
+                                          AppRoutes.loginRoute,
+                                        );
+                                      },
+                                      child: Text(
+                                        'Login',
+                                        style: TextStyle(
+                                          fontSize: 16.sp,
+                                          fontWeight: FontWeight.w500,
+                                          color: AppColors.primaryColor,
+                                          decoration: TextDecoration.underline,
+                                          decorationColor: AppColors.primaryColor,
                                         ),
                                       ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
@@ -274,7 +334,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
           ),
         );
-      }
+      },
     );
   }
 }
