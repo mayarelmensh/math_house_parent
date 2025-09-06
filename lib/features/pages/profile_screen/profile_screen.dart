@@ -6,6 +6,8 @@ import 'package:math_house_parent/core/widgets/custom_app_bar.dart';
 import 'package:math_house_parent/domain/entities/login_response_entity.dart';
 import 'package:math_house_parent/domain/entities/get_students_response_entity.dart';
 import '../../../core/utils/app_colors.dart';
+import '../../../core/utils/app_routes.dart';
+import '../../widgets/custom_elevated_button.dart';
 import '../students_screen/cubit/students_screen_cubit.dart';
 import '../students_screen/cubit/students_screen_states.dart';
 import 'cubit/profile_screen_cubit.dart';
@@ -268,7 +270,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           const SizedBox(height: 12),
           Text(
-            "حدث خطأ",
+            'Error Occurred',
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -763,26 +765,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
               style: TextStyle(color: AppColors.gray),
             ),
           ),
-          ElevatedButton(
+          CustomElevatedButton(
+            text: 'Log Out',
             onPressed: () {
-              SharedPreferenceUtils.removeData(key: 'CACHED_PARENT');
-              Navigator.pop(context);
+              SharedPreferenceUtils.removeData(key: 'token');
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                AppRoutes.loginRoute,
+                    (route) => false, // دي معناها امسح كل ال stack
+              );
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.red,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: const Text(
-              "Log Out",
-              style: TextStyle(
-                color: AppColors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
+            backgroundColor: AppColors.primaryColor,
+            textStyle: TextStyle(color: AppColors.white),
+          )
+
         ],
       ),
     );

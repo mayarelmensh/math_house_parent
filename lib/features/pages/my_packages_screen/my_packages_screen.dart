@@ -4,6 +4,7 @@ import 'package:math_house_parent/core/di/di.dart';
 import 'package:math_house_parent/data/models/student_selected.dart';
 
 import '../../../core/utils/app_colors.dart';
+import '../../../core/widgets/custom_app_bar.dart';
 import '../../../data/models/my_package_model.dart';
 import 'cubit/my_package_cubit.dart';
 
@@ -20,19 +21,7 @@ class MyPackageScreen extends StatelessWidget {
         ..fetchMyPackageData(userId: SelectedStudent.studentId ),
       child: Scaffold(
         backgroundColor: AppColors.lightGray,
-        appBar: AppBar(
-          backgroundColor: AppColors.primary,
-          title: const Text(
-            'My Package',
-            style: TextStyle(
-              color: AppColors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          iconTheme: const IconThemeData(color: AppColors.white),
-          elevation: 0,
-        ),
+        appBar: CustomAppBar(title: 'My Packages'),
         body: BlocBuilder<MyPackageCubit, MyPackageState>(
           builder: (context, state) {
             if (state is MyPackageInitial) {

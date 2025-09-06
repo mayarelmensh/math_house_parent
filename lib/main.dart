@@ -13,6 +13,7 @@ import 'package:math_house_parent/features/pages/payment_methods/buy_package_scr
 import 'package:math_house_parent/features/pages/payment_methods/payment_methods_screen.dart';
 import 'package:math_house_parent/features/pages/profile_screen/profile_screen.dart';
 import 'package:math_house_parent/features/pages/recharge_wallet_screen/recharge_wallet_screen.dart';
+import 'package:math_house_parent/features/pages/splash_screenn/splash_screen.dart';
 import 'package:math_house_parent/features/pages/students_screen/my_students_screen.dart';
 import 'package:math_house_parent/features/pages/students_screen/students_screen.dart';
 import 'package:math_house_parent/features/pages/students_screen/confirmation_screen.dart';
@@ -25,7 +26,6 @@ import 'features/auth/login/login_screen.dart';
 import 'features/auth/register/register_screen.dart';
 import 'features/pages/courses_screen/buy_courses_screen.dart';
 import 'features/pages/home_screen/home_screen.dart';
-import 'features/pages/log_out_screen/log_out_screen.dart';
 import 'features/pages/packages_screen/cubit/packages_cubit.dart';
 import 'features/pages/packages_screen/packages_screen.dart';
 import 'features/pages/profile_screen/cubit/profile_screen_cubit.dart';
@@ -39,7 +39,7 @@ void main() async {
   String routeName;
   var token = SharedPreferenceUtils.getData(key: 'token');
   if (token == null) {
-    routeName = AppRoutes.registerRoute;
+    routeName = AppRoutes.splashScreen;
   } else {
     //todo: token != null => user
     routeName = AppRoutes.myStudentScreen;
@@ -79,7 +79,7 @@ class MyApp extends StatelessWidget{
             AppRoutes.homeTab: (context) => HomeTab(),
             AppRoutes.confirmationScreen: (context) => ConfirmationScreen(),
             AppRoutes.profileScreen: (context) => ProfileScreen(),
-            AppRoutes.logOutScreen: (context) => LogOutScreen(),
+            // AppRoutes.logOutScreen: (context) => LogOutScreen(),
             // AppRoutes.coursesScreen: (context) => CoursesScreen(),
             AppRoutes.packagesScreen: (context) => PackagesScreen(),
             AppRoutes.paymentMethodsScreen: (context) => PaymentMethodsScreen(),
@@ -94,7 +94,7 @@ class MyApp extends StatelessWidget{
             AppRoutes.myPackagesScreen: (context) => MyPackageScreen(),
             AppRoutes.notificationsScreen: (context) => NotificationScreen(),
             AppRoutes.myCourse: (context) => MyCoursesScreen(),
-
+            AppRoutes.splashScreen:(context)=>SplashScreen()
           },
         )
         );

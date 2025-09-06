@@ -34,6 +34,7 @@ class GetStudentsRemoteDataSourceImpl implements GetStudentsRemoteDataSource {
       );
 
       if (response.data == null) {
+
         return Left(ServerError(errorMsg: "No data received from server"));
       }
 
@@ -68,7 +69,7 @@ class GetStudentsRemoteDataSourceImpl implements GetStudentsRemoteDataSource {
       var token = SharedPreferenceUtils.getData(key: 'token');
 
       final response = await apiManager.getData(
-        endPoint: EndPoints.getStudents, // ✅ لازم يبقى اندبوينت مختلف
+        endPoint: EndPoints.getStudents,
         options: Options(
           headers: {'Authorization': 'Bearer $token'},
         ),

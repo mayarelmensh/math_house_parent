@@ -598,17 +598,35 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                                                 onPressed: () async {
                                                   final url = method.description!;
                                                   final uri = Uri.tryParse(url);
-                                                  if (uri != null && await canLaunchUrl(uri)) {
-                                                    await launchUrl(uri, mode: LaunchMode.externalApplication);
+
+                                                  if (uri != null) {
+                                                    final canLaunch = await canLaunchUrl(uri);
+
+                                                    if (canLaunch) {
+                                                      // افتح في أبلكيشن خارجي لو متاح
+                                                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                                    } else {
+                                                      // لو مفيش، افتحه جوه الأبلكيشن
+                                                      await launchUrl(
+                                                        uri,
+                                                        mode: LaunchMode.inAppWebView,
+                                                        webViewConfiguration: const WebViewConfiguration(
+                                                          enableJavaScript: true,
+                                                        ),
+                                                      );
+                                                    }
                                                   } else {
-                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                      const SnackBar(
-                                                        content: Text('Could not open payment link'),
-                                                        backgroundColor: AppColors.red,
-                                                      ),
-                                                    );
+                                                    if (mounted) {
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                        const SnackBar(
+                                                          content: Text('Invalid URL'),
+                                                          backgroundColor: AppColors.red,
+                                                        ),
+                                                      );
+                                                    }
                                                   }
-                                                },
+                                                }
+                                                ,
                                                 icon: Icon(Icons.link, size: 16.sp, color: AppColors.white),
                                                 label: Text(
                                                   'Open Payment Link',

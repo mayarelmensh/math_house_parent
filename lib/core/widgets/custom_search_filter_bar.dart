@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../utils/app_colors.dart';
 
 class CustomSearchFilterBar extends StatefulWidget {
@@ -9,7 +9,11 @@ class CustomSearchFilterBar extends StatefulWidget {
   final String? hintText;
   final TextEditingController? controller;
   final bool showFilter;
-  final Icon? icon;
+  final Icon? prefixIcon;
+  final double? fontSize;
+  final EdgeInsets? contentPadding;
+  final BorderRadius? borderRadius;
+  final TextStyle? hintStyle;
 
   const CustomSearchFilterBar({
     super.key,
@@ -19,7 +23,11 @@ class CustomSearchFilterBar extends StatefulWidget {
     this.hintText,
     this.controller,
     this.showFilter = true,
-    this.icon,
+    this.prefixIcon,
+    this.fontSize,
+    this.contentPadding,
+    this.borderRadius,
+    this.hintStyle,
   });
 
   @override
@@ -33,8 +41,6 @@ class _CustomSearchFilterBarState extends State<CustomSearchFilterBar> {
   @override
   void initState() {
     super.initState();
-
-    // Use provided controller or create internal one
     if (widget.controller != null) {
       _searchController = widget.controller!;
       _isInternalController = false;
@@ -42,8 +48,6 @@ class _CustomSearchFilterBarState extends State<CustomSearchFilterBar> {
       _searchController = TextEditingController();
       _isInternalController = true;
     }
-
-    // Add listener for search changes
     _searchController.addListener(_onSearchChanged);
   }
 
@@ -51,14 +55,12 @@ class _CustomSearchFilterBarState extends State<CustomSearchFilterBar> {
     if (widget.onSearchChanged != null) {
       widget.onSearchChanged!(_searchController.text);
     }
-    // Trigger rebuild to show/hide clear button
     setState(() {});
   }
 
   @override
   void dispose() {
     _searchController.removeListener(_onSearchChanged);
-    // Only dispose if it's internal controller
     if (_isInternalController) {
       _searchController.dispose();
     }
@@ -70,70 +72,79 @@ class _CustomSearchFilterBarState extends State<CustomSearchFilterBar> {
     if (widget.onClearSearch != null) {
       widget.onClearSearch!();
     }
-    // Focus back to search field after clearing
     FocusScope.of(context).requestFocus(FocusNode());
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: MediaQuery.of(context).size.height * 0.08,
+      height: 48.h,
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.primaryColor),
-        borderRadius: BorderRadius.circular(20),
+        color: AppColors.white,
+        border: Border.all(color: AppColors.primaryColor, width: 1.w),
+        borderRadius: widget.borderRadius ?? BorderRadius.circular(12.r),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.black.withOpacity(0.1),
+            blurRadius: 6.r,
+            offset: Offset(0, 2.h),
+          ),
+        ],
       ),
       child: Row(
         children: [
-          const SizedBox(width: 8),
-          const Icon(Icons.search, color: AppColors.darkGrey),
-          const SizedBox(width: 8),
+          SizedBox(width: 8.w),
+          widget.prefixIcon ??
+              Icon(
+                Icons.search,
+                color: AppColors.grey[500],
+                size: 20.sp,
+              ),
+          SizedBox(width: 8.w),
           Expanded(
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
                 hintText: widget.hintText ?? 'Search...',
-                hintStyle: TextStyle(
-                  color: Colors.grey.shade500,
-                  fontSize: 14,
-                ),
+                hintStyle: widget.hintStyle ??
+                    TextStyle(
+                      color: AppColors.grey[500],
+                      fontSize: widget.fontSize ?? 16.sp,
+                    ),
                 border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 0,
-                  vertical: 12,
-                ),
+                contentPadding: widget.contentPadding ??
+                    EdgeInsets.symmetric(horizontal: 0, vertical: 12.h),
               ),
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.black87,
+              style: TextStyle(
+                fontSize: widget.fontSize ?? 16.sp,
+                color: AppColors.black,
               ),
             ),
           ),
-          // Clear button - only show when there's text
           if (_searchController.text.isNotEmpty) ...[
             IconButton(
-              icon: const Icon(Icons.clear, color: Colors.grey, size: 20),
+              icon: Icon(Icons.clear, color: AppColors.grey[500], size: 20.sp),
               onPressed: _clearSearch,
               tooltip: 'Clear search',
-              splashRadius: 20,
+              splashRadius: 20.r,
             ),
           ],
-          // Filter button - only show if showFilter is true
           if (widget.showFilter) ...[
             Container(
-              width: 50,
+              width: 48.w,
               height: double.infinity,
-              decoration: const BoxDecoration(
-                color: AppColors.primary,
+              decoration: BoxDecoration(
+                color: AppColors.primaryColor,
                 borderRadius: BorderRadius.only(
-                  topRight: Radius.circular(7),
-                  bottomRight: Radius.circular(7),
+                  topRight: Radius.circular(12.r),
+                  bottomRight: Radius.circular(12.r),
                 ),
               ),
               child: IconButton(
-                icon: const Icon(Icons.filter_list, color: Colors.white),
+                icon: Icon(Icons.filter_list, color: AppColors.white, size: 20.sp),
                 onPressed: widget.onFilterTap,
                 tooltip: 'Filter',
-                splashRadius: 20,
+                splashRadius: 20.r,
               ),
             ),
           ],

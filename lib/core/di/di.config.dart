@@ -116,6 +116,7 @@ import '../../features/pages/score_sheet_screen/cubit/get_courses_for_score_shee
     as _i21;
 import '../../features/pages/score_sheet_screen/cubit/score_sheet_cubit.dart'
     as _i542;
+import '../../features/pages/splash_screenn/cubit/splash_cubit.dart' as _i808;
 import '../../features/pages/students_screen/cubit/confirm_code_cubit.dart'
     as _i36;
 import '../../features/pages/students_screen/cubit/send_code_cubit.dart'
@@ -133,6 +134,7 @@ extension GetItInjectableX on _i174.GetIt {
     _i526.EnvironmentFilter? environmentFilter,
   }) {
     final gh = _i526.GetItHelper(this, environment, environmentFilter);
+    gh.factory<_i808.SplashCubit>(() => _i808.SplashCubit());
     gh.singleton<_i1047.ApiManager>(() => _i1047.ApiManager());
     gh.factory<_i530.ProfileLocalDataSource>(
       () => _i219.ProfileLocalDataSourceImpl(),

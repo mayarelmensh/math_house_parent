@@ -6,6 +6,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final VoidCallback? onAddPressed;
   final bool showAddIcon;
+  final bool showArrowBack;
   final List<Widget>? actions;
 
 
@@ -15,6 +16,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.onAddPressed,
     this.showAddIcon = false,
     this.actions,
+    this.showArrowBack=true,
   });
 
   @override
@@ -23,16 +25,17 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       scrolledUnderElevation: 0,
       backgroundColor: Colors.white,
       elevation: 0,
-      leading: Padding(
+      leading:   showArrowBack?  Padding(
         padding: const EdgeInsets.only(left: 12),
         child: CircleAvatar(
           backgroundColor: AppColors.primaryLight,
           child: IconButton(
-            icon: const Icon(Icons.arrow_back, color: AppColors.primary),
+            icon:  Icon(Icons.arrow_back, color: AppColors.primary),
             onPressed: () => Navigator.pop(context),
           ),
         ),
-      ),
+      ):
+          SizedBox(),
       title: Text(
         title,
         style: const TextStyle(

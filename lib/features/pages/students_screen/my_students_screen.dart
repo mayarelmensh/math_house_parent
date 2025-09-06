@@ -31,7 +31,7 @@ class _MyStudentsScreenState extends State<MyStudentsScreen> {
     return Scaffold(
       appBar: CustomAppBar(
         title: "My Students",
-
+        showArrowBack: false,
       ),
       body: Column(
         children: [
@@ -44,40 +44,148 @@ class _MyStudentsScreenState extends State<MyStudentsScreen> {
                     heightFactor: 17.333,
                     child: CircularProgressIndicator(
                       color: AppColors.primaryColor,
-                      strokeWidth: 3.w, // Responsive stroke width
+                      strokeWidth: 3.w,
                     ),
                   );
                 } else if (state is GetStudentsErrorState) {
                   return Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(16.r), // Responsive padding
-                      child: Text(
-                        "Error: ${state.error}",
-                        style: TextStyle(
-                          fontSize: 16.sp, // Responsive font size
-                          color: AppColors.red,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        textAlign: TextAlign.center,
+                    child: Container(
+                      margin: EdgeInsets.all(32.r),
+                      padding: EdgeInsets.all(24.r),
+                      decoration: BoxDecoration(
+                        color: AppColors.white,
+                        borderRadius: BorderRadius.circular(16.r),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.black.withOpacity(0.1),
+                            blurRadius: 10.r,
+                            offset: Offset(0, 4.h),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            padding: EdgeInsets.all(16.r),
+                            decoration: BoxDecoration(
+                              color: AppColors.red.withOpacity(0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.error_outline,
+                              size: 48.sp,
+                              color: AppColors.red,
+                            ),
+                          ),
+                          SizedBox(height: 16.h),
+                          Text(
+                            'An error occurred',
+                            style: TextStyle(
+                              fontSize: 18.sp,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.grey[800],
+                            ),
+                          ),
+                          SizedBox(height: 8.h),
+                          Text(
+                            state.error.errorMsg,
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              color: AppColors.grey[600],
+                              height: 1.4,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          SizedBox(height: 24.h),
+                          CustomElevatedButton(
+                            text: 'Try Again',
+                            onPressed: () => studentsCubit.getMyStudents(),
+                            backgroundColor: AppColors.primaryColor,
+                            textStyle: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14.sp,
+                              color: AppColors.white,
+                            ),
+                            // padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 12.h),
+                            // borderRadius: BorderRadius.circular(8.r),
+                          ),
+                        ],
                       ),
                     ),
                   );
                 } else if (state is GetMyStudents) {
                   if (state.myStudents.isEmpty) {
                     return Center(
-                      child: Text(
-                        "No students found",
-                        style: TextStyle(
-                          fontSize: 18.sp, // Responsive font size
-                          color: AppColors.grey[600],
-                          fontWeight: FontWeight.w600,
+                      child: Container(
+                        margin: EdgeInsets.all(32.r),
+                        padding: EdgeInsets.all(24.r),
+                        decoration: BoxDecoration(
+                          color: AppColors.white,
+                          borderRadius: BorderRadius.circular(16.r),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.black.withOpacity(0.1),
+                              blurRadius: 10.r,
+                              offset: Offset(0, 4.h),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              padding: EdgeInsets.all(16.r),
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryColor.withOpacity(0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.school_outlined,
+                                size: 48.sp,
+                                color: AppColors.primaryColor,
+                              ),
+                            ),
+                            SizedBox(height: 16.h),
+                            Text(
+                              'No students found',
+                              style: TextStyle(
+                                fontSize: 18.sp,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.grey[800],
+                              ),
+                            ),
+                            SizedBox(height: 8.h),
+                            Text(
+                              'Add a student to get started',
+                              style: TextStyle(
+                                fontSize: 14.sp,
+                                color: AppColors.grey[600],
+                              ),
+                            ),
+                            SizedBox(height: 24.h),
+                            CustomElevatedButton(
+                              text: 'Add Student',
+                              onPressed: () {
+                                Navigator.pushNamed(context, AppRoutes.getStudent);
+                              },
+                              backgroundColor: AppColors.primaryColor,
+                              textStyle: TextStyle(
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.white,
+                              ),
+                              // padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 12.h),
+                              // borderRadius: BorderRadius.circular(8.r),
+                            ),
+                          ],
                         ),
                       ),
                     );
                   }
 
                   return ListView.builder(
-                    padding: EdgeInsets.all(16.r), // Responsive padding
+                    padding: EdgeInsets.all(16.r),
                     itemCount: state.myStudents.length,
                     itemBuilder: (context, index) {
                       final student = state.myStudents[index];
@@ -86,7 +194,7 @@ class _MyStudentsScreenState extends State<MyStudentsScreen> {
 
                       return Card(
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16.r), // Responsive radius
+                          borderRadius: BorderRadius.circular(16.r),
                           side: isSelected
                               ? BorderSide(color: AppColors.primaryColor, width: 2.w)
                               : BorderSide(color: Colors.transparent),
@@ -94,15 +202,12 @@ class _MyStudentsScreenState extends State<MyStudentsScreen> {
                         color: isSelected
                             ? AppColors.primaryColor.withOpacity(0.1)
                             : Colors.white,
-                        margin: EdgeInsets.only(bottom: 12.h), // Responsive margin
+                        margin: EdgeInsets.only(bottom: 12.h),
                         elevation: 3,
                         child: ListTile(
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: 16.w,
-                            vertical: 8.h,
-                          ), // Responsive padding
+                          contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                           leading: CircleAvatar(
-                            radius: 24.r, // Responsive radius
+                            radius: 24.r,
                             backgroundColor: isSelected
                                 ? AppColors.primaryColor
                                 : AppColors.primaryColor.withOpacity(0.5),
@@ -110,7 +215,7 @@ class _MyStudentsScreenState extends State<MyStudentsScreen> {
                               student.nickName?.substring(0, 1).toUpperCase() ?? "?",
                               style: TextStyle(
                                 color: AppColors.white,
-                                fontSize: 18.sp, // Responsive font size
+                                fontSize: 18.sp,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -118,7 +223,7 @@ class _MyStudentsScreenState extends State<MyStudentsScreen> {
                           title: Text(
                             student.nickName ?? "Unknown",
                             style: TextStyle(
-                              fontSize: 18.sp, // Responsive font size
+                              fontSize: 18.sp,
                               fontWeight: FontWeight.w600,
                               color: isSelected ? AppColors.primaryColor : Colors.black,
                             ),
@@ -126,7 +231,7 @@ class _MyStudentsScreenState extends State<MyStudentsScreen> {
                           subtitle: Text(
                             student.email ?? "",
                             style: TextStyle(
-                              fontSize: 14.sp, // Responsive font size
+                              fontSize: 14.sp,
                               color: AppColors.grey[600],
                             ),
                           ),
@@ -145,9 +250,9 @@ class _MyStudentsScreenState extends State<MyStudentsScreen> {
             ),
           ),
           Padding(
-            padding: EdgeInsets.symmetric(vertical: 30.h, horizontal: 16.w), // Responsive padding
+            padding: EdgeInsets.symmetric(vertical: 30.h, horizontal: 16.w),
             child: CustomElevatedButton(
-              text: 'Go TO Home',
+              text: 'Go to Home',
               onPressed: () {
                 final selectedId = context.read<GetStudentsCubit>().selectedStudentId;
 
@@ -161,14 +266,14 @@ class _MyStudentsScreenState extends State<MyStudentsScreen> {
                       content: Text(
                         "Please select a student first",
                         style: TextStyle(
-                          fontSize: 14.sp, // Responsive font size
+                          fontSize: 14.sp,
                           color: AppColors.white,
                         ),
                       ),
-                      padding: EdgeInsets.all(12.r), // Responsive padding
+                      padding: EdgeInsets.all(12.r),
                       behavior: SnackBarBehavior.floating,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.r), // Responsive radius
+                        borderRadius: BorderRadius.circular(8.r),
                       ),
                     ),
                   );
@@ -177,14 +282,11 @@ class _MyStudentsScreenState extends State<MyStudentsScreen> {
               backgroundColor: AppColors.primaryColor,
               textStyle: TextStyle(
                 color: AppColors.white,
-                fontSize: 16.sp, // Responsive font size
+                fontSize: 16.sp,
                 fontWeight: FontWeight.w600,
               ),
-              // padding: EdgeInsets.symmetric(
-              //   horizontal: 32.w,
-              //   vertical: 12.h,
-              // ), // Responsive padding
-              // borderRadius: BorderRadius.circular(8.r), // Responsive radius
+              // padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 12.h),
+              // borderRadius: BorderRadius.circular(8.r),
             ),
           ),
         ],

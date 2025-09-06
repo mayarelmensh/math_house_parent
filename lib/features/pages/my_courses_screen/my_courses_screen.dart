@@ -3,15 +3,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:math_house_parent/core/di/di.dart';
 import 'package:math_house_parent/core/utils/app_colors.dart';
-import 'package:math_house_parent/core/utils/custom_snack_bar.dart';
+import 'package:math_house_parent/core/utils/flutter_toast.dart';
+import 'package:math_house_parent/core/widgets/custom_app_bar.dart';
+import 'package:math_house_parent/core/widgets/custom_search_filter_bar.dart';
 import 'package:math_house_parent/data/models/my_course_model.dart';
-import 'package:path/path.dart';
+import 'package:math_house_parent/data/models/student_selected.dart';
+import 'package:math_house_parent/features/widgets/custom_elevated_button.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'cuibt/my_courses_cuibt.dart';
 import 'cuibt/my_courses_states.dart';
-
-
-
 
 class MyCoursesScreen extends StatefulWidget {
   const MyCoursesScreen({super.key});
@@ -26,7 +26,8 @@ class _MyCoursesScreenState extends State<MyCoursesScreen>
   late Animation<double> _fadeAnimation;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
-  MyCoursesCubit myCoursesCubit=getIt<MyCoursesCubit>();
+  final MyCoursesCubit myCoursesCubit = getIt<MyCoursesCubit>();
+  int? _userId;
 
   @override
   void initState() {
@@ -49,42 +50,42 @@ class _MyCoursesScreenState extends State<MyCoursesScreen>
   void dispose() {
     _animationController.dispose();
     _searchController.dispose();
+    myCoursesCubit.close();
     super.dispose();
   }
-
 
   Future<void> _fetchCourses() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token') ?? '';
-      final userId = prefs.getInt('user_id') ?? 0;
+      _userId = SelectedStudent.studentId;
 
-      if (token.isNotEmpty && userId != 0) {
-        myCoursesCubit.fetchMyCourses(userId);
+      if (token.isNotEmpty && _userId != 0) {
+        myCoursesCubit.fetchMyCourses(_userId!);
       } else {
-        ScaffoldMessenger.of(context as BuildContext).showSnackBar(
-          const SnackBar(
-            content: Text('No token or user ID found. Please log in.'),
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'No token or user ID found. Please log in.',
+              style: TextStyle(fontSize: 14.sp, color: AppColors.white),
+            ),
+            backgroundColor: AppColors.red,
+            padding: EdgeInsets.all(12.r),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8.r),
+            ),
           ),
         );
       }
     } catch (e) {
-      showTopSnackBar(context as BuildContext, 'Error loading courses: $e');
+      ToastMessage.toastMessage(
+        'Error loading courses: $e',
+        AppColors.red,
+        AppColors.white,
+      );
     }
   }
-
-  // Future<void> _fetchCourses() async {
-  //   final prefs = await SharedPreferences.getInstance();
-  //   final token = prefs.getString('token') ?? '';
-  //   final userId = prefs.getInt('user_id') ?? 0;
-  //   if (token.isNotEmpty && userId != 0) {
-  //     .fetchMyCourses(userId);
-  //   } else {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       const SnackBar(content: Text('No token or user ID found. Please log in.')),
-  //     );
-  //   }
-  // }
 
   List<Chapter> _filterChapters(List<Chapter> chapters) {
     return chapters.where((chapter) {
@@ -96,18 +97,7 @@ class _MyCoursesScreenState extends State<MyCoursesScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.lightGray,
-      appBar: AppBar(
-        title: const Text(
-          'My Courses',
-          style: TextStyle(
-            color: AppColors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-          ),
-        ),
-        backgroundColor: AppColors.primaryColor,
-        elevation: 0,
-      ),
+      appBar: CustomAppBar(title: 'My Courses'),
       body: BlocBuilder<MyCoursesCubit, MyCoursesState>(
         bloc: myCoursesCubit,
         builder: (context, state) {
@@ -143,41 +133,19 @@ class _MyCoursesScreenState extends State<MyCoursesScreen>
   }
 
   Widget _buildSearchBar() {
-    return Container(
-      margin: EdgeInsets.all(16.r),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(12.r),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.black.withOpacity(0.05),
-            blurRadius: 10.r,
-            offset: Offset(0, 2.h),
-          ),
-        ],
-      ),
-      child: TextField(
+    return Padding(
+      padding: EdgeInsets.all(16.r),
+      child: CustomSearchFilterBar(
+        showFilter: false,
+        onSearchChanged: (value) => setState(() => _searchQuery = value),
+        onClearSearch: () => setState(() => _searchQuery = ''),
+        hintText: 'Search For Chapters',
         controller: _searchController,
-        onChanged: (value) => setState(() => _searchQuery = value),
-        decoration: InputDecoration(
-          hintText: 'Search For Chapters',
-          hintStyle: TextStyle(color: AppColors.grey[500]),
-          prefixIcon: Icon(Icons.search, color: AppColors.grey[500]),
-          suffixIcon: _searchQuery.isNotEmpty
-              ? IconButton(
-            icon: Icon(Icons.clear, color: AppColors.grey[500]),
-            onPressed: () {
-              _searchController.clear();
-              setState(() => _searchQuery = '');
-            },
-          )
-              : null,
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(
-            horizontal: 16.w,
-            vertical: 12.h,
-          ),
-        ),
+        fontSize: 16.sp,
+        contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+        borderRadius: BorderRadius.circular(12.r),
+        hintStyle: TextStyle(color: AppColors.grey[500], fontSize: 16.sp),
+        prefixIcon: Icon(Icons.search, color: AppColors.grey[500], size: 20.sp),
       ),
     );
   }
@@ -243,9 +211,7 @@ class _MyCoursesScreenState extends State<MyCoursesScreen>
                   child: CourseCard(
                     course: course,
                     chapters: filteredChapters,
-                    onTap: () {
-                      _navigateToCourseDetails(course);
-                    },
+                    onTap: () => _navigateToCourseDetails(course),
                   ),
                 ),
               );
@@ -274,7 +240,7 @@ class _MyCoursesScreenState extends State<MyCoursesScreen>
           ),
           SizedBox(height: 24.h),
           Text(
-            'Loading Courses',
+            'Loading Courses...',
             style: TextStyle(
               fontSize: 16.sp,
               color: AppColors.grey[600],
@@ -292,70 +258,63 @@ class _MyCoursesScreenState extends State<MyCoursesScreen>
         margin: EdgeInsets.all(32.r),
         padding: EdgeInsets.all(24.r),
         decoration: BoxDecoration(
-          color: AppColors.white,
-          borderRadius: BorderRadius.circular(16.r),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.black.withOpacity(0.1),
-              blurRadius: 10.r,
-              offset: Offset(0, 2.h),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: EdgeInsets.all(16.r),
-              decoration: BoxDecoration(
-                color: AppColors.red.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.error_outline,
-                size: 48.r,
-                color: AppColors.red,
-              ),
-            ),
-            SizedBox(height: 16.h),
-            Text(
-              'An error occurred',
-              style: TextStyle(
-                fontSize: 18.sp,
-                fontWeight: FontWeight.w600,
-                color: AppColors.grey[800],
-              ),
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              error,
-              style: TextStyle(
-                fontSize: 14.sp,
-                color: AppColors.grey[600],
-                height: 1.4,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 24.h),
-            ElevatedButton(
-              onPressed: onRetry,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryColor,
-                foregroundColor: AppColors.white,
-                padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 12.h),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
-                elevation: 2,
-              ),
-              child: Text(
-                'Try Again',
-                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14.sp),
-              ),
-            ),
-          ],
-        ),
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(16.r),
+            boxShadow: [
+        BoxShadow(
+        color: AppColors.black.withOpacity(0.1),
+        blurRadius: 10.r,
+        offset: Offset(0, 4.h),
+        ) ],
       ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: EdgeInsets.all(16.r),
+            decoration: BoxDecoration(
+              color: AppColors.red.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.error_outline,
+              size: 48.sp,
+              color: AppColors.red,
+            ),
+          ),
+          SizedBox(height: 16.h),
+          Text(
+            'An error occurred',
+            style: TextStyle(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w600,
+              color: AppColors.grey[800],
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            error,
+            style: TextStyle(
+              fontSize: 14.sp,
+              color: AppColors.grey[600],
+              height: 1.4,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 24.h),
+          CustomElevatedButton(
+            text: 'Try Again',
+            onPressed: onRetry,
+            backgroundColor: AppColors.primaryColor,
+            textStyle: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 14.sp,
+              color: AppColors.white,
+            ),
+          ),
+        ],
+      ),
+    ),
     );
   }
 
@@ -371,7 +330,7 @@ class _MyCoursesScreenState extends State<MyCoursesScreen>
             BoxShadow(
               color: AppColors.black.withOpacity(0.1),
               blurRadius: 10.r,
-              offset: Offset(0, 2.h),
+              offset: Offset(0, 4.h),
             ),
           ],
         ),
@@ -412,7 +371,7 @@ class _MyCoursesScreenState extends State<MyCoursesScreen>
 
   void _navigateToCourseDetails(MyCoursesModel course) {
     showModalBottomSheet(
-      context: context as BuildContext,
+      context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => _buildCourseDetailsBottomSheet(course),
@@ -421,7 +380,7 @@ class _MyCoursesScreenState extends State<MyCoursesScreen>
 
   Widget _buildCourseDetailsBottomSheet(MyCoursesModel course) {
     return Container(
-      height: MediaQuery.of(context as BuildContext).size.height * 0.8,
+      height: 0.8.sh,
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.only(
@@ -442,7 +401,7 @@ class _MyCoursesScreenState extends State<MyCoursesScreen>
           ),
           Expanded(
             child: SingleChildScrollView(
-              padding: EdgeInsets.all(20.w),
+              padding: EdgeInsets.all(20.r),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -503,6 +462,24 @@ class _MyCoursesScreenState extends State<MyCoursesScreen>
                       .map((chapter) => _buildChapterTile(Chapter.fromJson(chapter.toJson())))
                       .toList(),
                 ],
+              ),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+            child: CustomElevatedButton(
+              text: 'Close',
+              onPressed: () {
+                Navigator.pop(context);
+                if (_userId != null) {
+                  myCoursesCubit.fetchMyCourses(_userId!);
+                }
+              },
+              backgroundColor: AppColors.primaryColor,
+              textStyle: TextStyle(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600,
+                color: AppColors.white,
               ),
             ),
           ),
@@ -703,7 +680,7 @@ class _CourseCardState extends State<CourseCard> with SingleTickerProviderStateM
                   fontSize: 18.sp,
                   fontWeight: FontWeight.w700,
                   color: AppColors.black,
-                  height: 1.2.h,
+                  height: 1.2,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -718,7 +695,7 @@ class _CourseCardState extends State<CourseCard> with SingleTickerProviderStateM
           style: TextStyle(
             fontSize: 14.sp,
             color: AppColors.grey[600],
-            height: 1.4.h,
+            height: 1.4,
           ),
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
@@ -750,7 +727,7 @@ class _CourseCardState extends State<CourseCard> with SingleTickerProviderStateM
       mainAxisSize: MainAxisSize.min,
       children: [
         Icon(icon, size: 14.sp, color: color),
-        SizedBox(width: 1.w),
+        SizedBox(width: 4.w),
         Text(
           text,
           style: TextStyle(

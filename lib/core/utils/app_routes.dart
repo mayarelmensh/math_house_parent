@@ -23,5 +23,6 @@ class AppRoutes {
   static String myPackagesScreen="my_packages_screen";
   static String notificationsScreen="notifications_screen";
   static String myCourse="my_course_screen";
+  static String splashScreen="splash_screen";
 
 }

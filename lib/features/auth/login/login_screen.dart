@@ -38,7 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
           DialogUtils.hideLoading(context);
           DialogUtils.showMessage(
             context: context,
-            message: state.errors.errorMsg,
+            message: 'Email or password is invalid',
             title: 'Error',
             posActionName: 'Ok',
             posAction: () {

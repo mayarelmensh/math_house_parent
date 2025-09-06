@@ -343,13 +343,26 @@ class _WalletRechargeScreenState extends State<WalletRechargeScreen> {
                   onPressed: () async {
                     final url = method.description!;
                     final uri = Uri.tryParse(url);
-                    if (uri != null && await canLaunchUrl(uri)) {
-                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                    if (uri != null) {
+                      final canLaunch = await canLaunchUrl(uri);
+                      if (canLaunch) {
+                        // افتح في أبلكيشن خارجي لو متاح
+                        await launchUrl(uri, mode: LaunchMode.externalApplication);
+                      } else {
+                        // لو مفيش، افتحه جوه الأبلكيشن
+                        await launchUrl(
+                          uri,
+                          mode: LaunchMode.inAppWebView,
+                          webViewConfiguration: const WebViewConfiguration(
+                            enableJavaScript: true,
+                          ),
+                        );
+                      }
                     } else {
                       if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('Could not open payment link'),
+                            content: Text('Invalid URL'),
                             backgroundColor: AppColors.red,
                           ),
                         );

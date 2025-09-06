@@ -221,7 +221,6 @@ class _PackagesScreenState extends State<PackagesScreen> {
                           'packagePrice':package.price,
                           'packageModule':package.module,
                         'packageDuration':package.duration,
-                        // هنا استخدم package.id وليس selectedPackage.id
                       },
 
                     );
