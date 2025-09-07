@@ -25,7 +25,6 @@ import 'core/utils/my_bloc_observer.dart';
 import 'features/auth/login/login_screen.dart';
 import 'features/auth/register/register_screen.dart';
 import 'features/pages/courses_screen/buy_courses_screen.dart';
-import 'features/pages/home_screen/home_screen.dart';
 import 'features/pages/packages_screen/cubit/packages_cubit.dart';
 import 'features/pages/packages_screen/packages_screen.dart';
 import 'features/pages/profile_screen/cubit/profile_screen_cubit.dart';
@@ -74,13 +73,10 @@ class MyApp extends StatelessWidget{
             AppRoutes.loginRoute: (context) => LoginScreen(),
             AppRoutes.registerRoute: (context) => RegisterScreen(),
             AppRoutes.forgetPasswordRoute: (context) => ForgetPasswordScreen(),
-            AppRoutes.homeRoute: (context) => HomeScreen(),
             AppRoutes.getStudent: (context) => StudentsScreen(),
             AppRoutes.homeTab: (context) => HomeTab(),
             AppRoutes.confirmationScreen: (context) => ConfirmationScreen(),
             AppRoutes.profileScreen: (context) => ProfileScreen(),
-            // AppRoutes.logOutScreen: (context) => LogOutScreen(),
-            // AppRoutes.coursesScreen: (context) => CoursesScreen(),
             AppRoutes.packagesScreen: (context) => PackagesScreen(),
             AppRoutes.paymentMethodsScreen: (context) => PaymentMethodsScreen(),
             AppRoutes.myStudentScreen: (context) => MyStudentsScreen(),

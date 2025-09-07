@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:math_house_parent/core/utils/app_colors.dart';
 
-void showTopSnackBar(BuildContext context, String message, {Color color = Colors.green}) {
+void showTopSnackBar(BuildContext context, String message, Color color) {
   final overlay = Overlay.of(context);
   final overlayEntry = OverlayEntry(
     builder: (context) => Positioned(
@@ -8,7 +9,7 @@ void showTopSnackBar(BuildContext context, String message, {Color color = Colors
       left: 16,
       right: 16,
       child: Material(
-        color: Colors.transparent,
+        color: color,
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(

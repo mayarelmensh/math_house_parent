@@ -54,7 +54,7 @@ class PickerImage extends State<StatefulWidget> {
         );
       }
     } catch (e) {
-      showTopSnackBar(context, 'Error selecting image: ${e.toString()}');
+      showTopSnackBar(context, 'Error selecting image: ${e.toString()}',AppColors.primaryColor);
     }
   }
 

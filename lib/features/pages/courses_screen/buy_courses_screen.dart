@@ -43,7 +43,6 @@ class _BuyCourseScreenState extends State<BuyCourseScreen> with TickerProviderSt
   int? _selectedCategoryId;
   final ImagePicker picker = ImagePicker();
 
-  // متغيرات الصورة - مهم أن تكون هنا في الـ main state
   String? base64String;
   Uint8List? imageBytes;
 
@@ -106,24 +105,13 @@ class _BuyCourseScreenState extends State<BuyCourseScreen> with TickerProviderSt
           base64String = imageBase64;
         });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Payment proof uploaded successfully'),
-            backgroundColor: AppColors.green,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8.r),
-            ),
-            duration: const Duration(seconds: 2),
-          ),
-        );
+        showTopSnackBar(context, 'Payment proof uploaded successfully',AppColors.green);
       }
     } catch (e) {
-      showTopSnackBar(context, 'Error selecting image: ${e.toString()}');
+      showTopSnackBar(context, 'Error selecting image: ${e.toString()}',AppColors.primaryColor);
     }
   }
 
-  // دالة عرض خيارات اختيار الصورة - responsive
   void showImageSourceBottomSheet(BuildContext parentContext) {
     showModalBottomSheet(
       context: parentContext,
@@ -237,7 +225,6 @@ class _BuyCourseScreenState extends State<BuyCourseScreen> with TickerProviderSt
     final buyChapterCubit = getIt<BuyChapterCubit>();
     dynamic selectedPaymentMethodId = 'Wallet';
 
-    // إعادة تعيين الصورة عند فتح bottom sheet جديد
     setState(() {
       imageBytes = null;
       base64String = null;
@@ -259,30 +246,20 @@ class _BuyCourseScreenState extends State<BuyCourseScreen> with TickerProviderSt
         child: BlocListener<BuyCourseCubit, BuyCourseStates>(
           listener: (context, state) {
             if (state is BuyCourseSuccessState) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Course "${state.response.course?.courseName ?? 'Unknown'}" purchased successfully!'),
-                  backgroundColor: AppColors.green,
-                ),
-              );
+              showTopSnackBar(context, 'Course "${state.response.course?.courseName ?? 'Unknown'}" purchased successfully!',AppColors.green);
               Navigator.pop(context);
             } else if (state is BuyCourseErrorState) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.error),
-                  backgroundColor: AppColors.red,
-                ),
-              );
+              showTopSnackBar(context, 'Please Check the balance of wallet or select invalid payment method',AppColors.primaryColor);
             }
           },
           child: BlocListener<BuyChapterCubit, BuyChapterStates>(
             bloc: buyChapterCubit,
             listener: (context, state) {
               if (state is BuyChapterSuccessState) {
-                showTopSnackBar(context, 'Chapter "${state.model.chapters?.first.chapterName ?? 'Unknown'}" purchased successfully!');
+                showTopSnackBar(context, 'Chapter "${state.model.chapters?.first.chapterName ?? 'Unknown'}" purchased successfully!',AppColors.green);
                 Navigator.pop(context);
               } else if (state is BuyChapterErrorState) {
-                showTopSnackBar(context, state.error);
+                showTopSnackBar(context,"Please Check the balance of wallet or select invalid payment method", AppColors.primaryColor);
               }
             },
             child: StatefulBuilder(
@@ -341,14 +318,9 @@ class _BuyCourseScreenState extends State<BuyCourseScreen> with TickerProviderSt
                       );
                     }
 
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Purchase confirmed successfully!'),
-                        backgroundColor: Colors.green,
-                      ),
-                    );
+                   showTopSnackBar(context, 'Purchase confirmed successfully!',AppColors.green);
                   } catch (e) {
-                    showTopSnackBar(context, 'Error confirming purchase: ${e.toString()}');
+                    showTopSnackBar(context, 'Error confirming purchase: ${e.toString()}', AppColors.primaryColor);
                   }
                 }
 
@@ -417,7 +389,6 @@ class _BuyCourseScreenState extends State<BuyCourseScreen> with TickerProviderSt
                             ],
                           ),
                         ),
-                        // قسم عرض وتحميل الصورة - responsive
                         if (selectedPaymentMethodId != 'Wallet')
                           Padding(
                             padding: EdgeInsets.symmetric(horizontal: isTablet ? 20.w : 16.w, vertical: 8.h),

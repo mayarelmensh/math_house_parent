@@ -109,7 +109,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
         );
       }
     } catch (e) {
-      showTopSnackBar(context, 'Error selecting image: ${e.toString()}');
+      showTopSnackBar(context, 'Error selecting image: ${e.toString()}',AppColors.primaryColor);
     }
   }
 
@@ -209,7 +209,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
               );
               Navigator.pop(context);
             } else if (state is BuyPackageError) {
-              showTopSnackBar(context, state.message);
+              showTopSnackBar(context, state.message,AppColors.primaryColor);
             }
           },
           child: StatefulBuilder(
@@ -253,7 +253,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                     image: imageData,
                   );
                 } catch (e) {
-                  showTopSnackBar(context, 'Error confirming purchase: ${e.toString()}');
+                  showTopSnackBar(context, 'Error confirming purchase: ${e.toString()}',AppColors.primaryColor);
                 }
               }
 

@@ -31,16 +31,14 @@ class BuyChapterCubit extends Cubit<BuyChapterStates> {
         return;
       }
 
-      // تحضير الـ image data بناءً على نوع الدفع
       String imageData;
       if (image == 'wallet') {
         imageData = 'wallet';
       } else {
-        // إذا كان Base64، تحقق من وجود الـ prefix أو لا
         if (image.startsWith('data:image/')) {
-          imageData = image; // الـ prefix موجود بالفعل
+          imageData = image;
         } else {
-          imageData = 'data:image/jpeg;base64,$image'; // أضف الـ prefix
+          imageData = 'data:image/jpeg;base64,$image';
         }
       }
 

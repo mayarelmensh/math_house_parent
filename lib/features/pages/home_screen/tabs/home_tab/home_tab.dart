@@ -71,14 +71,6 @@ class HomeTab extends StatelessWidget {
                 Navigator.pushNamed(context, AppRoutes.notificationsScreen);
               },
             ),
-            // HomeCard(
-            //   icon: Icons.logout_outlined,
-            //   title: "Log Out",
-            //   subtitle: "Log out",
-            //   onTap: () {
-            //     Navigator.pushNamed(context, AppRoutes.logOutScreen);
-            //   },
-            // ),
             HomeCard(
               icon: Icons.person,
               title: "Profile",
