@@ -40,10 +40,9 @@ void main() async {
   if (token == null) {
     routeName = AppRoutes.splashScreen;
   } else {
-    //todo: token != null => user
     routeName = AppRoutes.myStudentScreen;
   }
-  runApp(MyApp(routeName: routeName,));
+  runApp(MyApp(routeName: routeName));
 }
 
 class MyApp extends StatelessWidget{
@@ -90,7 +89,7 @@ class MyApp extends StatelessWidget{
             AppRoutes.myPackagesScreen: (context) => MyPackageScreen(),
             AppRoutes.notificationsScreen: (context) => NotificationScreen(),
             AppRoutes.myCourse: (context) => MyCoursesScreen(),
-            AppRoutes.splashScreen:(context)=>SplashScreen()
+            AppRoutes.splashScreen :(context)=>SplashScreen()
           },
         )
         );

@@ -1,5 +1,4 @@
 class EndPoints{
-
   static const String signUp='/parent/sign_up';
   static const String signIn='/parent/login';
   static const String sendCode='/parent/student/add';
@@ -24,5 +23,8 @@ class EndPoints{
   static const String  myPackages ='/parent/packages/my_packages';
   static const String  notifications ='/parent/notification';
   static const String  promoCode ='/parent/courses/use_promocode';
+  static const String  forgetPassword ='/parent/forget_password';
+  static const String  confirmPasswordCode ='/parent/confirm_code';
+  static const String  resetPassword ='/parent/update_password';
 
 }

@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart' as selectedPackage;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:math_house_parent/core/utils/app_colors.dart';
 import 'package:math_house_parent/core/utils/app_routes.dart';
 import 'package:math_house_parent/core/widgets/custom_app_bar.dart';
@@ -49,7 +50,7 @@ class _PackagesScreenState extends State<PackagesScreen> {
 
     if (studentId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a student first')),
+        SnackBar(content: Text('Please select a student first', style: TextStyle(fontSize: 14.sp))),
       );
       return;
     }
@@ -62,7 +63,7 @@ class _PackagesScreenState extends State<PackagesScreen> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Please select a course first'),
+          content: Text('Please select a course first', style: TextStyle(fontSize: 14.sp)),
           backgroundColor: Colors.orange,
         ),
       );
@@ -75,140 +76,380 @@ class _PackagesScreenState extends State<PackagesScreen> {
     return packages.where((p) => p.module == selectedModuleFilter).toList();
   }
 
-  Widget _buildSelectionCard({
-    required String title,
-    required Widget child,
-    required IconData icon,
-  }) {
+  Widget _buildCompactSelectionRow() {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      margin: EdgeInsets.only(bottom: 20.h),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Course and Filter Selection Row
           Row(
             children: [
-              Icon(icon, color: AppColors.primaryColor, size: 20),
-              const SizedBox(width: 8),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
+              // Course Selection
+              Expanded(
+                flex: 3,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12.r),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.1),
+                        spreadRadius: 1.r,
+                        blurRadius: 4.r,
+                        offset: Offset(0, 2.h),
+                      ),
+                    ],
+                  ),
+                  child: BlocBuilder<CoursesCubit, CoursesStates>(
+                    bloc: coursesCubit,
+                    builder: (context, state) {
+                      if (state is CoursesLoadingState) {
+                        return Container(
+                          padding: EdgeInsets.all(16.w),
+                          child: Center(
+                            child: SizedBox(
+                              height: 20.h,
+                              width: 20.w,
+                              child: CircularProgressIndicator(
+                                color: AppColors.primaryColor,
+                                strokeWidth: 2.w,
+                              ),
+                            ),
+                          ),
+                        );
+                      } else if (state is CoursesSuccessState) {
+                        final courses = state.coursesResponseEntity.categories!
+                            .expand((cat) => cat.course!)
+                            .toList();
+                        return DropdownButtonFormField<CourseEntity>(
+                          isExpanded: true, // عشان يمنع الأوفرفلو
+                          decoration: InputDecoration(
+                            isDense: true,
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 12.w,
+                              vertical: 12.h,
+                            ),
+                            hintText: "Select Course",
+                            prefixIcon: Icon(
+                              Icons.school,
+                              color: AppColors.primaryColor,
+                              size: 20.sp,
+                            ),
+                            border: InputBorder.none,
+                            hintStyle: TextStyle(fontSize: 14.sp),
+                          ),
+                          value: selectedCourse,
+                          items: courses.map((c) {
+                            return DropdownMenuItem(
+                              value: c,
+                              child: Text(
+                                c.courseName ?? "",
+                                style: TextStyle(fontSize: 14.sp),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            );
+                          }).toList(),
+                          onChanged: (val) {
+                            setState(() => selectedCourse = val);
+                          },
+                        );
+                      }
+                      return Container(
+                        padding: EdgeInsets.all(16.w),
+                        child: Text("Error", style: TextStyle(fontSize: 14.sp)),
+                      );
+                    },
+                  ),
+                ),
+              ),
+
+              SizedBox(width: 12.w),
+
+              // Module Filter
+              Expanded(
+                flex: 2,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12.r),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.1),
+                        spreadRadius: 1.r,
+                        blurRadius: 4.r,
+                        offset: Offset(0, 2.h),
+                      ),
+                    ],
+                  ),
+                  child: DropdownButtonFormField<String>(
+                    isExpanded: true, // عشان يمنع الأوفرفلو
+                    decoration: InputDecoration(
+                      isDense: true,
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 12.w,
+                        vertical: 12.h,
+                      ),
+                      hintText: "Filter",
+                      prefixIcon: Icon(
+                        Icons.filter_list,
+                        color: AppColors.primaryColor,
+                        size: 20.sp,
+                      ),
+                      border: InputBorder.none,
+                      hintStyle: TextStyle(fontSize: 14.sp),
+                    ),
+                    value: selectedModuleFilter,
+                    items: const [
+                      DropdownMenuItem(value: 'All', child: Text("All", style: TextStyle(fontSize: 14))),
+                      DropdownMenuItem(value: 'Live', child: Text("Live", style: TextStyle(fontSize: 14))),
+                      DropdownMenuItem(value: 'Question', child: Text("Question", style: TextStyle(fontSize: 14))),
+                      DropdownMenuItem(value: 'Exam', child: Text("Exam", style: TextStyle(fontSize: 14))),
+                    ],
+                    onChanged: (val) {
+                      setState(() => selectedModuleFilter = val);
+                    },
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          child,
+
+          SizedBox(height: 16.h),
+
+          // Load Button
+          SizedBox(
+            width: double.infinity,
+            height: 48.h,
+            child: ElevatedButton.icon(
+              onPressed: _loadPackages,
+              icon: Icon(Icons.refresh, color: Colors.white, size: 20.sp),
+              label: Text(
+                "Load Packages",
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryColor,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                elevation: 2,
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildPackageCard(dynamic package) {
+  Widget _buildEnhancedPackageCard(dynamic package) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: EdgeInsets.only(bottom: 16.h),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [Colors.white, Colors.grey.shade50],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.15),
-            spreadRadius: 1,
-            blurRadius: 6,
-            offset: const Offset(0, 2),
+            spreadRadius: 1.r,
+            blurRadius: 8.r,
+            offset: Offset(0, 3.h),
           ),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(20.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Header with package name and module badge
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
                   child: Text(
                     package.name ?? "Unnamed Package",
-                    style: const TextStyle(
-                      fontSize: 18,
+                    style: TextStyle(
+                      fontSize: 20.sp,
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
                     ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 14.w,
+                    vertical: 8.h,
                   ),
                   decoration: BoxDecoration(
-                    color: _getModuleColor(package.module),
-                    borderRadius: BorderRadius.circular(20),
+                    gradient: LinearGradient(
+                      colors: _getModuleGradientColors(package.module),
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(25.r),
+                    boxShadow: [
+                      BoxShadow(
+                        color: _getModuleColor(package.module).withOpacity(0.3),
+                        spreadRadius: 1.r,
+                        blurRadius: 4.r,
+                        offset: Offset(0, 2.h),
+                      ),
+                    ],
                   ),
-                  child: Text(
-                    _getModuleText(package.module),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        _getModuleIcon(package.module),
+                        color: Colors.white,
+                        size: 14.sp,
+                      ),
+                      SizedBox(width: 6.w),
+                      Text(
+                        _getModuleText(package.module),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+
+            SizedBox(height: 16.h),
+
+            // Price and Duration with enhanced styling
+            Container(
+              padding: EdgeInsets.all(16.w),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(color: Colors.grey.shade200),
+              ),
+              child: Row(
+                children: [
+                  // Price Section
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: EdgeInsets.all(8.w),
+                              decoration: BoxDecoration(
+                                color: Colors.green.shade100,
+                                borderRadius: BorderRadius.circular(8.r),
+                              ),
+                              child: Icon(
+                                Icons.attach_money,
+                                color: Colors.green.shade700,
+                                size: 18.sp,
+                              ),
+                            ),
+                            SizedBox(width: 8.w),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Price",
+                                  style: TextStyle(
+                                    fontSize: 12.sp,
+                                    color: Colors.grey.shade600,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                Text(
+                                  "${package.price ?? 0} EGP",
+                                  style: TextStyle(
+                                    fontSize: 16.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.green.shade700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Icon(
-                  Icons.attach_money,
-                  color: Colors.green.shade600,
-                  size: 20,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  "${package.price ?? 0} EGP",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.green.shade700,
+
+                  Container(
+                    height: 40.h,
+                    width: 1.w,
+                    color: Colors.grey.shade300,
                   ),
-                ),
-                const Spacer(),
-                Icon(Icons.access_time, color: Colors.blue.shade600, size: 20),
-                const SizedBox(width: 4),
-                Text(
-                  "${package.duration ?? 0} mins",
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.blue.shade700,
-                    fontWeight: FontWeight.w500,
+
+                  // Duration Section
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  "Duration",
+                                  style: TextStyle(
+                                    fontSize: 12.sp,
+                                    color: Colors.grey.shade600,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                Text(
+                                  "${package.duration ?? 0} mins",
+                                  style: TextStyle(
+                                    fontSize: 16.sp,
+                                    color: Colors.blue.shade700,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(width: 8.w),
+                            Container(
+                              padding: EdgeInsets.all(8.w),
+                              decoration: BoxDecoration(
+                                color: Colors.blue.shade100,
+                                borderRadius: BorderRadius.circular(8.r),
+                              ),
+                              child: Icon(
+                                Icons.access_time,
+                                color: Colors.blue.shade700,
+                                size: 18.sp,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-            const SizedBox(height: 12),
-            Align(
-              alignment: Alignment.centerRight,
+
+            SizedBox(height: 16.h),
+
+            // Enhanced Buy Button
+            SizedBox(
+              width: double.infinity,
+              height: 50.h,
               child: ElevatedButton(
                 onPressed: () {
                   if (SelectedStudent.studentId != null) {
@@ -217,20 +458,19 @@ class _PackagesScreenState extends State<PackagesScreen> {
                       AppRoutes.paymentMethodsScreen,
                       arguments: {
                         'packageId': package.id,
-                         'packageName':package.name,
-                          'packagePrice':package.price,
-                          'packageModule':package.module,
-                        'packageDuration':package.duration,
+                        'packageName': package.name,
+                        'packagePrice': package.price,
+                        'packageModule': package.module,
+                        'packageDuration': package.duration,
                       },
-
                     );
                     debugPrint(
                       "🛒 Buy package: ${package.id}, for student: ${SelectedStudent.studentId} ",
                     );
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Please select a student first'),
+                      SnackBar(
+                        content: Text('Please select a student first', style: TextStyle(fontSize: 14.sp)),
                       ),
                     );
                   }
@@ -238,21 +478,29 @@ class _PackagesScreenState extends State<PackagesScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryColor,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  elevation: 2,
+                  elevation: 3,
+                  shadowColor: AppColors.primaryColor.withOpacity(0.3),
                 ),
-                child: Text(
-                  'Buy Package',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.white,
-                  ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.shopping_cart,
+                      color: AppColors.white,
+                      size: 20.sp,
+                    ),
+                    SizedBox(width: 8.w),
+                    Text(
+                      'Buy Package',
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.white,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -275,6 +523,32 @@ class _PackagesScreenState extends State<PackagesScreen> {
     }
   }
 
+  List<Color> _getModuleGradientColors(String? module) {
+    switch (module?.toLowerCase()) {
+      case 'live':
+        return [Colors.red.shade400, Colors.red.shade600];
+      case 'question':
+        return [Colors.blue.shade400, Colors.blue.shade600];
+      case 'exam':
+        return [Colors.purple.shade400, Colors.purple.shade600];
+      default:
+        return [Colors.grey.shade400, Colors.grey.shade600];
+    }
+  }
+
+  IconData _getModuleIcon(String? module) {
+    switch (module?.toLowerCase()) {
+      case 'live':
+        return Icons.live_tv;
+      case 'question':
+        return Icons.quiz;
+      case 'exam':
+        return Icons.assignment;
+      default:
+        return Icons.help;
+    }
+  }
+
   String _getModuleText(String? module) {
     switch (module?.toLowerCase()) {
       case 'live':
@@ -290,249 +564,147 @@ class _PackagesScreenState extends State<PackagesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(create: (_) => coursesCubit),
-        BlocProvider(create: (_) => packagesCubit),
-      ],
-      child: Scaffold(
-        backgroundColor: Colors.grey.shade50,
-        appBar: CustomAppBar(title: "Packages"),
-        body: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              // Course Selection
-              _buildSelectionCard(
-                title: "Select Course",
-                icon: Icons.school,
-                child: BlocBuilder<CoursesCubit, CoursesStates>(
-                  bloc: coursesCubit,
-                  builder: (context, state) {
-                    if (state is CoursesLoadingState) {
-                      return Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(20),
-                          child: CircularProgressIndicator(
-                            color: AppColors.primaryColor,
-                          ),
-                        ),
-                      );
-                    } else if (state is CoursesSuccessState) {
-                      final courses = state.coursesResponseEntity.categories!
-                          .expand((cat) => cat.course!)
-                          .toList();
-                      return DropdownButtonFormField<CourseEntity>(
-                        decoration: InputDecoration(
-                          isDense: true,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
-                          hintText: "Choose a course",
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(color: Colors.grey.shade300),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(
-                              color: AppColors.primaryColor,
-                            ),
-                          ),
-                          filled: true,
-                          fillColor: Colors.grey.shade50,
-                        ),
-                        value: selectedCourse,
-                        items: courses.map((c) {
-                          return DropdownMenuItem(
-                            value: c,
-                            child: Text(
-                              c.courseName ?? "",
-                              style: const TextStyle(fontSize: 16),
+    return ScreenUtilInit(
+      designSize: const Size(360, 690), // حجم التصميم الأساسي
+      minTextAdapt: true,
+      splitScreenMode: true,
+      builder: (context, child) {
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider(create: (_) => coursesCubit),
+            BlocProvider(create: (_) => packagesCubit),
+          ],
+          child: Scaffold(
+            backgroundColor: Colors.grey.shade50,
+            appBar: CustomAppBar(title: "Packages"),
+            body: Padding(
+              padding: EdgeInsets.all(16.w),
+              child: Column(
+                children: [
+                  // Compact Selection Row
+                  _buildCompactSelectionRow(),
+
+                  // Packages List
+                  Expanded(
+                    child: BlocBuilder<PackagesCubit, PackagesStates>(
+                      builder: (context, state) {
+                        if (state is PackagesLoadingState) {
+                          return Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                CircularProgressIndicator(
+                                  color: AppColors.primaryColor,
+                                  strokeWidth: 3.w,
+                                ),
+                                SizedBox(height: 16.h),
+                                Text(
+                                  "Loading packages...",
+                                  style: TextStyle(
+                                    fontSize: 16.sp,
+                                    color: Colors.grey.shade600,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
                             ),
                           );
-                        }).toList(),
-                        onChanged: (val) {
-                          setState(() => selectedCourse = val);
-                        },
-                      );
-                    }
-                    return Container(
-                      padding: const EdgeInsets.all(20),
-                      child: const Text("Error loading courses"),
-                    );
-                  },
-                ),
-              ),
-
-              // Module Filter
-              _buildSelectionCard(
-                title: "Filter by Type",
-                icon: Icons.filter_list,
-                child: DropdownButtonFormField<String>(
-                  decoration: InputDecoration(
-                    isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    hintText: "Choose content type",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(color: Colors.grey.shade300),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(color: AppColors.primaryColor),
-                    ),
-                    filled: true,
-                    fillColor: Colors.grey.shade50,
-                  ),
-                  value: selectedModuleFilter,
-                  items: const [
-                    DropdownMenuItem(value: 'All', child: Text("All")),
-                    DropdownMenuItem(value: 'Live', child: Text("Live")),
-                    DropdownMenuItem(
-                      value: 'Question',
-                      child: Text("Questions"),
-                    ),
-                    DropdownMenuItem(value: 'Exam', child: Text("Exams")),
-                  ],
-                  onChanged: (val) {
-                    setState(() => selectedModuleFilter = val);
-                  },
-                ),
-              ),
-
-              // Load Button
-              Container(
-                width: double.infinity,
-                height: 50,
-                margin: const EdgeInsets.only(bottom: 16),
-                child: ElevatedButton(
-                  onPressed: _loadPackages,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryColor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 2,
-                  ),
-                  child: const Text(
-                    "Load Packages",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-
-              // Packages List
-              Expanded(
-                flex: 3,
-                child: BlocBuilder<PackagesCubit, PackagesStates>(
-                  builder: (context, state) {
-                    if (state is PackagesLoadingState) {
-                      return Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            CircularProgressIndicator(
-                              color: AppColors.primaryColor,
-                            ),
-                            SizedBox(height: 16),
-                            Text(
-                              "Loading packages...",
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.grey,
+                        } else if (state is PackagesSpecificCourseSuccessState) {
+                          var packages = filterPackagesByModule(
+                            state.packagesResponseList,
+                          );
+                          if (packages.isEmpty) {
+                            return Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    padding: EdgeInsets.all(20.w),
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey.shade200,
+                                      borderRadius: BorderRadius.circular(50.r),
+                                    ),
+                                    child: Icon(
+                                      Icons.inbox_outlined,
+                                      size: 60.sp,
+                                      color: Colors.grey.shade400,
+                                    ),
+                                  ),
+                                  SizedBox(height: 20.h),
+                                  Text(
+                                    "No packages available",
+                                    style: TextStyle(
+                                      fontSize: 20.sp,
+                                      color: Colors.grey.shade600,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  SizedBox(height: 8.h),
+                                  Text(
+                                    "Try changing the filter or selecting another course",
+                                    style: TextStyle(
+                                      fontSize: 14.sp,
+                                      color: Colors.grey.shade500,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
                               ),
-                            ),
-                          ],
-                        ),
-                      );
-                    } else if (state is PackagesSpecificCourseSuccessState) {
-                      var packages = filterPackagesByModule(
-                        state.packagesResponseList,
-                      );
-                      if (packages.isEmpty) {
+                            );
+                          }
+                          return ListView.builder(
+                            itemCount: packages.length,
+                            itemBuilder: (_, i) {
+                              final pkg = packages[i];
+                              return _buildEnhancedPackageCard(pkg);
+                            },
+                          );
+                        }
                         return Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(
-                                Icons.inbox_outlined,
-                                size: 80,
-                                color: Colors.grey.shade400,
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                "No packages available",
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.grey.shade600,
-                                  fontWeight: FontWeight.w500,
+                              Container(
+                                padding: EdgeInsets.all(20.w),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade200,
+                                  borderRadius: BorderRadius.circular(50.r),
+                                ),
+                                child: Icon(
+                                  Icons.touch_app_outlined,
+                                  size: 60.sp,
+                                  color: Colors.grey.shade400,
                                 ),
                               ),
-                              const SizedBox(height: 8),
+                              SizedBox(height: 20.h),
                               Text(
-                                "Try changing the filter or selecting another course",
+                                "Select course first",
                                 style: TextStyle(
-                                  fontSize: 14,
+                                  fontSize: 20.sp,
+                                  color: Colors.grey.shade600,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              SizedBox(height: 8.h),
+                              Text(
+                                "Then press 'Load Packages' button",
+                                style: TextStyle(
+                                  fontSize: 14.sp,
                                   color: Colors.grey.shade500,
                                 ),
                               ),
                             ],
                           ),
                         );
-                      }
-                      return ListView.builder(
-                        itemCount: packages.length,
-                        itemBuilder: (_, i) {
-                          final pkg = packages[i];
-                          return _buildPackageCard(pkg);
-                        },
-                      );
-                    }
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.touch_app_outlined,
-                            size: 80,
-                            color: Colors.grey.shade400,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            "Select course first",
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.grey.shade600,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            "Then press 'Load Packages' button",
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey.shade500,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
+                      },
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

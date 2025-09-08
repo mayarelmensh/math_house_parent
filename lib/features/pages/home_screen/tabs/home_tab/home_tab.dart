@@ -16,6 +16,12 @@ class HomeTab extends StatelessWidget {
 
     return Scaffold(
       appBar: CustomAppBar(
+        actions: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12,vertical: 10),
+            child: Image.asset("assets/images/logo.png"),
+          ),
+        ],
         title: 'Home',
         // Ensure CustomAppBar is responsive (adjust if needed)
       ),

@@ -82,6 +82,12 @@ import '../../domain/use_case/payment_methods_use_case.dart' as _i290;
 import '../../domain/use_case/profile_use_case.dart' as _i591;
 import '../../domain/use_case/register_use_case.dart' as _i78;
 import '../../domain/use_case/send_code_to_student_use_case.dart' as _i359;
+import '../../features/auth/forget_password_screen/cubit/confirm_code_password_cubit.dart'
+    as _i701;
+import '../../features/auth/forget_password_screen/cubit/forget_password_cubit.dart'
+    as _i637;
+import '../../features/auth/forget_password_screen/cubit/reset_password_cubit.dart'
+    as _i876;
 import '../../features/auth/login/login_cubit/login_cubit.dart' as _i969;
 import '../../features/auth/register/register_cubit/register_cubit.dart'
     as _i547;
@@ -110,13 +116,14 @@ import '../../features/pages/payment_methods/cubit/payment_methods_cubit.dart'
     as _i354;
 import '../../features/pages/profile_screen/cubit/profile_screen_cubit.dart'
     as _i314;
+import '../../features/pages/promo_code_screen/cubit/promo_code_cubit.dart'
+    as _i935;
 import '../../features/pages/recharge_wallet_screen/cuibt/recharge_wallet_cubit.dart'
     as _i379;
 import '../../features/pages/score_sheet_screen/cubit/get_courses_for_score_sheet_cubit.dart'
     as _i21;
 import '../../features/pages/score_sheet_screen/cubit/score_sheet_cubit.dart'
     as _i542;
-import '../../features/pages/splash_screenn/cubit/splash_cubit.dart' as _i808;
 import '../../features/pages/students_screen/cubit/confirm_code_cubit.dart'
     as _i36;
 import '../../features/pages/students_screen/cubit/send_code_cubit.dart'
@@ -134,7 +141,6 @@ extension GetItInjectableX on _i174.GetIt {
     _i526.EnvironmentFilter? environmentFilter,
   }) {
     final gh = _i526.GetItHelper(this, environment, environmentFilter);
-    gh.factory<_i808.SplashCubit>(() => _i808.SplashCubit());
     gh.singleton<_i1047.ApiManager>(() => _i1047.ApiManager());
     gh.factory<_i530.ProfileLocalDataSource>(
       () => _i219.ProfileLocalDataSourceImpl(),
@@ -165,6 +171,18 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i598.ChapterDataCubit>(
       () => _i598.ChapterDataCubit(gh<_i1047.ApiManager>()),
     );
+    gh.factory<_i348.MyCoursesCubit>(
+      () => _i348.MyCoursesCubit(gh<_i1047.ApiManager>()),
+    );
+    gh.factory<_i647.MyPackageCubit>(
+      () => _i647.MyPackageCubit(gh<_i1047.ApiManager>()),
+    );
+    gh.factory<_i170.NotificationCubit>(
+      () => _i170.NotificationCubit(gh<_i1047.ApiManager>()),
+    );
+    gh.factory<_i935.PromoCodeCubit>(
+      () => _i935.PromoCodeCubit(gh<_i1047.ApiManager>()),
+    );
     gh.factory<_i379.WalletRechargeCubit>(
       () => _i379.WalletRechargeCubit(gh<_i1047.ApiManager>()),
     );
@@ -177,15 +195,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i744.WalletHistoryCubit>(
       () => _i744.WalletHistoryCubit(gh<_i1047.ApiManager>()),
     );
-    gh.factory<_i348.MyCoursesCubit>(
-      () => _i348.MyCoursesCubit(gh<_i1047.ApiManager>()),
-    );
-    gh.factory<_i647.MyPackageCubit>(
-      () => _i647.MyPackageCubit(gh<_i1047.ApiManager>()),
-    );
-    gh.factory<_i170.NotificationCubit>(
-      () => _i170.NotificationCubit(gh<_i1047.ApiManager>()),
-    );
     gh.factory<_i698.ConfirmCodeDataSource>(
       () => _i307.ConfirmCodeRemoteDataSourceImpl(
         apiManager: gh<_i1047.ApiManager>(),
@@ -193,6 +202,15 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i852.AuthDataSource>(
       () => _i150.AuthRemoteDataSourceImpl(apiManager: gh<_i1047.ApiManager>()),
+    );
+    gh.factory<_i637.ForgetPasswordCubit>(
+      () => _i637.ForgetPasswordCubit(apiManager: gh<_i1047.ApiManager>()),
+    );
+    gh.factory<_i701.OtpVerificationCubit>(
+      () => _i701.OtpVerificationCubit(apiManager: gh<_i1047.ApiManager>()),
+    );
+    gh.factory<_i876.ResetPasswordCubit>(
+      () => _i876.ResetPasswordCubit(apiManager: gh<_i1047.ApiManager>()),
     );
     gh.factory<_i138.BuyPackageRepository>(
       () =>

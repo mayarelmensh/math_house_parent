@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:math_house_parent/core/di/di.dart';
+import 'package:math_house_parent/core/widgets/custom_app_bar.dart';
 import '../../../core/utils/app_colors.dart';
 import 'cubit/payment_invoice_states.dart';
 import 'cubit/paymnt_invoice_cubit.dart';
@@ -33,10 +34,7 @@ class _PaymentInvoiceScreenState extends State<PaymentInvoiceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Invoice Details'),
-        backgroundColor: AppColors.primary,
-      ),
+      appBar: CustomAppBar(title: 'Invoice Details'),
       body: BlocBuilder<PaymentInvoiceCubit, PaymentInvoiceState>(
         bloc: paymentInvoiceCubit,
         builder: (context, state) {
@@ -47,7 +45,6 @@ class _PaymentInvoiceScreenState extends State<PaymentInvoiceScreen> {
           } else if (state is PaymentInvoiceError) {
             return Center(child: Text(state.message));
           } else if (state is PaymentInvoiceSuccess) {
-            print("//////////////////////////////$paymentId");
             final invoice = state.invoice.invoice;
             if (invoice == null) {
               return const Center(child: Text('No invoice data available'));

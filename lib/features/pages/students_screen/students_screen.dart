@@ -44,6 +44,7 @@ class _StudentsScreenState extends State<StudentsScreen> {
           Padding(
             padding: const EdgeInsets.all(16),
             child: CustomSearchFilterBar(
+
               showFilter: false,
               onSearchChanged: (value) {
                 cubit.searchStudents(value);

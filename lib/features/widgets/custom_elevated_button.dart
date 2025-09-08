@@ -7,9 +7,10 @@ class CustomElevatedButton extends StatelessWidget {
   Color backgroundColor;
   TextStyle textStyle;
   void Function()? onPressed;
-
+  Color? filledColor ;
   CustomElevatedButton(
       {super.key,
+        this.filledColor,
         required this.text,
         required this.onPressed,
         required this.backgroundColor,

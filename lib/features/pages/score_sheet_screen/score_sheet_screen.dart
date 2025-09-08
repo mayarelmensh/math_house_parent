@@ -146,7 +146,9 @@ class _ScoreSheetScreenState extends State<ScoreSheetScreen> with SingleTickerPr
                         builder: (context, scoreSheetState) {
                           print('Score sheet state: $scoreSheetState');
                           if (scoreSheetState is ScoreSheetLoadingState) {
-                            return const Center(child: CircularProgressIndicator());
+                            return  Center(child: CircularProgressIndicator(
+                              color: AppColors.primaryColor,
+                            ));
                           } else if (scoreSheetState is ScoreSheetErrorState) {
                             return Center(
                               child: Text(

@@ -7,22 +7,24 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:math_house_parent/core/di/di.dart';
-import 'package:math_house_parent/core/utils/app_colors.dart';
-import 'package:math_house_parent/core/widgets/custom_app_bar.dart';
-import 'package:math_house_parent/data/models/student_selected.dart';
-import 'package:math_house_parent/domain/entities/courses_response_entity.dart';
-import 'package:math_house_parent/domain/entities/payment_methods_response_entity.dart';
-import 'package:math_house_parent/features/pages/payment_methods/cubit/payment_methods_cubit.dart';
-import 'package:math_house_parent/features/pages/payment_methods/cubit/payment_methods_states.dart';
-import 'package:math_house_parent/features/widgets/custom_elevated_button.dart';
+import '../../../core/di/di.dart';
+import '../../../core/utils/app_colors.dart';
 import '../../../core/utils/custom_snack_bar.dart';
-import 'cubit/buy_course_cubit.dart';
-import 'cubit/buy_course_states.dart';
+import '../../../core/widgets/custom_app_bar.dart';
+import '../../../data/models/promo_code_model.dart';
+import '../../../data/models/student_selected.dart';
+import '../../../domain/entities/courses_response_entity.dart';
+import '../../../domain/entities/payment_methods_response_entity.dart';
+import '../../widgets/custom_elevated_button.dart';
+import '../payment_methods/cubit/payment_methods_cubit.dart';
+import '../payment_methods/cubit/payment_methods_states.dart';
+import '../promo_code_screen/cubit/promo_code_cubit.dart';
+import '../promo_code_screen/cubit/promo_code_states.dart';
 import 'cubit/buy_chapter_cubit.dart';
 import 'cubit/buy_chapter_states.dart';
+import 'cubit/buy_course_cubit.dart';
+import 'cubit/buy_course_states.dart';
 import 'cubit/chapter_data_cubit.dart';
-import 'cubit/chapter_data_states.dart';
 import 'cubit/courses_cubit.dart';
 import 'cubit/courses_states.dart';
 
@@ -35,29 +37,19 @@ class BuyCourseScreen extends StatefulWidget {
   State<BuyCourseScreen> createState() => _BuyCourseScreenState();
 }
 
-class _BuyCourseScreenState extends State<BuyCourseScreen> with TickerProviderStateMixin {
+class _BuyCourseScreenState extends State<BuyCourseScreen>
+    with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
   int? _selectedCategoryId;
-  final ImagePicker picker = ImagePicker();
-
   String? base64String;
   Uint8List? imageBytes;
-
-  final ImagePicker _picker = ImagePicker();
   ChapterDataCubit chapterDataCubit = getIt<ChapterDataCubit>();
 
-  // Helper methods للـ responsive design
   bool get isTablet => MediaQuery.of(context).size.width > 600;
   bool get isDesktop => MediaQuery.of(context).size.width > 1024;
-  double get screenWidth => MediaQuery.of(context).size.width;
-  int get crossAxisCount {
-    if (isDesktop) return 3;
-    if (isTablet) return 2;
-    return 1;
-  }
 
   @override
   void initState() {
@@ -83,738 +75,6 @@ class _BuyCourseScreenState extends State<BuyCourseScreen> with TickerProviderSt
     super.dispose();
   }
 
-  // دالة اختيار الصورة - تحديث الـ main state
-  Future<void> pickImage(ImageSource source, BuildContext bottomSheetContext) async {
-    try {
-      Navigator.pop(bottomSheetContext); // إغلاق bottom sheet اختيار المصدر
-
-      final XFile? pickedFile = await picker.pickImage(
-        source: source,
-        maxWidth: 1920,
-        maxHeight: 1080,
-        imageQuality: 85,
-      );
-
-      if (pickedFile != null) {
-        final File imageFile = File(pickedFile.path);
-        final List<int> imageFileBytes = await imageFile.readAsBytes();
-        final String imageBase64 = base64Encode(imageFileBytes);
-
-        setState(() {
-          imageBytes = Uint8List.fromList(imageFileBytes);
-          base64String = imageBase64;
-        });
-
-        showTopSnackBar(context, 'Payment proof uploaded successfully',AppColors.green);
-      }
-    } catch (e) {
-      showTopSnackBar(context, 'Error selecting image: ${e.toString()}',AppColors.primaryColor);
-    }
-  }
-
-  void showImageSourceBottomSheet(BuildContext parentContext) {
-    showModalBottomSheet(
-      context: parentContext,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-      ),
-      builder: (context) => Container(
-        padding: EdgeInsets.all(isTablet ? 24.w : 20.w),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Select Image Source',
-              style: TextStyle(
-                fontSize: isTablet ? 20.sp : 18.sp,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: isTablet ? 24.h : 20.h),
-            Row(
-              children: [
-                Expanded(
-                  child: InkWell(
-                    onTap: () => pickImage(ImageSource.camera, context),
-                    child: Container(
-                      padding: EdgeInsets.all(isTablet ? 24.w : 20.w),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade300),
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                      child: Column(
-                        children: [
-                          Icon(Icons.camera_alt, size: isTablet ? 48.sp : 40.sp, color: AppColors.primary),
-                          SizedBox(height: 8.h),
-                          Text('Camera', style: TextStyle(fontSize: isTablet ? 16.sp : 14.sp)),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(width: 16.w),
-                Expanded(
-                  child: InkWell(
-                    onTap: () => pickImage(ImageSource.gallery, context),
-                    child: Container(
-                      padding: EdgeInsets.all(isTablet ? 24.w : 20.w),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade300),
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                      child: Column(
-                        children: [
-                          Icon(Icons.photo_library, size: isTablet ? 48.sp : 40.sp, color: AppColors.primary),
-                          SizedBox(height: 8.h),
-                          Text('Gallery', style: TextStyle(fontSize: isTablet ? 16.sp : 14.sp)),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: isTablet ? 24.h : 20.h),
-          ],
-        ),
-      ),
-    );
-  }
-
-  List<CourseEntity> _filterCourses(List<CourseEntity> courses, List<CategoriesEntity> categories) {
-    List<CourseEntity> filteredCourses = courses.where((course) {
-      return (course.courseName?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false) ||
-          (course.courseDescription?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false);
-    }).toList();
-
-    if (_selectedCategoryId != null) {
-      final selectedCategory = categories.firstWhere(
-            (category) => category.id == _selectedCategoryId,
-        orElse: () => CategoriesEntity(),
-      );
-      if (selectedCategory.course != null) {
-        filteredCourses = filteredCourses.where((course) {
-          return selectedCategory.course!.any((c) => c.id == course.id);
-        }).toList();
-      } else {
-        filteredCourses = [];
-      }
-    }
-
-    return filteredCourses;
-  }
-
-  List<CourseEntity> _getAllCourses(CoursesResponseEntity coursesResponse) {
-    List<CourseEntity> allCourses = [];
-    if (coursesResponse.categories != null) {
-      for (var category in coursesResponse.categories!) {
-        if (category.course != null) {
-          allCourses.addAll(category.course!);
-        }
-      }
-    }
-    return allCourses;
-  }
-
-  void _showPaymentMethodsBottomSheet({
-    required CourseEntity course,
-    ChaptersEntity? chapter,
-  }) {
-    final paymentMethodsCubit = getIt<PaymentMethodsCubit>();
-    final buyCourseCubit = getIt<BuyCourseCubit>();
-    final buyChapterCubit = getIt<BuyChapterCubit>();
-    dynamic selectedPaymentMethodId = 'Wallet';
-
-    setState(() {
-      imageBytes = null;
-      base64String = null;
-    });
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      constraints: BoxConstraints(
-        maxWidth: isDesktop ? 600 : double.infinity,
-      ),
-      builder: (context) => MultiBlocProvider(
-        providers: [
-          BlocProvider.value(value: paymentMethodsCubit),
-          BlocProvider.value(value: buyCourseCubit),
-          BlocProvider.value(value: buyChapterCubit),
-        ],
-        child: BlocListener<BuyCourseCubit, BuyCourseStates>(
-          listener: (context, state) {
-            if (state is BuyCourseSuccessState) {
-              showTopSnackBar(context, 'Course "${state.response.course?.courseName ?? 'Unknown'}" purchased successfully!',AppColors.green);
-              Navigator.pop(context);
-            } else if (state is BuyCourseErrorState) {
-              showTopSnackBar(context, 'Please Check the balance of wallet or select invalid payment method',AppColors.primaryColor);
-            }
-          },
-          child: BlocListener<BuyChapterCubit, BuyChapterStates>(
-            bloc: buyChapterCubit,
-            listener: (context, state) {
-              if (state is BuyChapterSuccessState) {
-                showTopSnackBar(context, 'Chapter "${state.model.chapters?.first.chapterName ?? 'Unknown'}" purchased successfully!',AppColors.green);
-                Navigator.pop(context);
-              } else if (state is BuyChapterErrorState) {
-                showTopSnackBar(context,"Please Check the balance of wallet or select invalid payment method", AppColors.primaryColor);
-              }
-            },
-            child: StatefulBuilder(
-              builder: (BuildContext context, StateSetter bottomSheetSetState) {
-                void confirmPurchase() async {
-                  if (selectedPaymentMethodId == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Please select a payment method'),
-                        backgroundColor: Colors.orange,
-                      ),
-                    );
-                    return;
-                  }
-
-                  String imageData;
-
-                  if (selectedPaymentMethodId == 'Wallet') {
-                    imageData = 'wallet';
-                  } else {
-                    if (base64String == null) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Please upload the invoice image'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                      return;
-                    }
-                    imageData = 'data:image/jpeg;base64,$base64String';
-                  }
-
-                  try {
-                    if (chapter == null) {
-                      await buyCourseCubit.buyPackage(
-                        courseId: course.id!,
-                        paymentMethodId: selectedPaymentMethodId!,
-                        amount: course.price?.toDouble() ?? 0.0,
-                        userId: SelectedStudent.studentId,
-                        duration: course.allPrices?.isNotEmpty == true
-                            ? course.allPrices!.first.duration ?? 30
-                            : 30,
-                        image: imageData,
-                      );
-                    } else {
-                      await buyChapterCubit.buyChapter(
-                        courseId: course.id!,
-                        paymentMethodId: selectedPaymentMethodId!,
-                        amount: chapter.chapterPrice ?? 0,
-                        userId: SelectedStudent.studentId,
-                        chapterId: chapter.id!,
-                        duration: chapter.chapterAllPrices?.isNotEmpty == true
-                            ? chapter.chapterAllPrices!.first.duration ?? 30
-                            : 30,
-                        image: imageData,
-                      );
-                    }
-
-                   showTopSnackBar(context, 'Purchase confirmed successfully!',AppColors.green);
-                  } catch (e) {
-                    showTopSnackBar(context, 'Error confirming purchase: ${e.toString()}', AppColors.primaryColor);
-                  }
-                }
-
-                return Container(
-                  height: MediaQuery.of(context).size.height * (isTablet ? 0.75 : 0.7),
-                  width: isDesktop ? 600 : double.infinity,
-                  child: Material(
-                    color: AppColors.white,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(20.r),
-                      topRight: Radius.circular(20.r),
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: Column(
-                      children: [
-                        Container(
-                          width: 40.w,
-                          height: 4.h,
-                          margin: EdgeInsets.only(top: 12.h),
-                          decoration: BoxDecoration(
-                            color: AppColors.grey[300],
-                            borderRadius: BorderRadius.circular(2.r),
-                          ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.all(isTablet ? 20.w : 16.w),
-                          child: Text(
-                            'Select Payment Method',
-                            style: TextStyle(
-                              fontSize: isTablet ? 20.sp : 18.sp,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: isTablet ? 20.w : 16.w, vertical: 8.h),
-                          child: Column(
-                            children: [
-                              Text(
-                                chapter == null
-                                    ? 'Course: ${course.courseName ?? 'Unknown'}'
-                                    : 'Chapter: ${chapter.chapterName ?? 'Unknown'}',
-                                style: TextStyle(
-                                  fontSize: isTablet ? 18.sp : 16.sp,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.grey[800],
-                                ),
-                              ),
-                              SizedBox(height: 8.h),
-                              Text(
-                                'Price: ${chapter == null ? (course.price ?? 0) : (chapter.chapterPrice ?? 0)} EGP',
-                                style: TextStyle(
-                                  fontSize: isTablet ? 18.sp : 16.sp,
-                                  color: AppColors.green,
-                                ),
-                              ),
-                              SizedBox(height: 8.h),
-                              Text(
-                                'Duration: ${chapter == null ? (course.allPrices?.isNotEmpty == true ? course.allPrices!.first.duration ?? 30 : 30) : (chapter.chapterAllPrices?.isNotEmpty == true ? chapter.chapterAllPrices!.first.duration ?? 30 : 30)} days',
-                                style: TextStyle(
-                                  fontSize: isTablet ? 16.sp : 16.sp,
-                                  color: AppColors.grey[700],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        if (selectedPaymentMethodId != 'Wallet')
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: isTablet ? 20.w : 16.w, vertical: 8.h),
-                            child: Column(
-                              children: [
-                                if (imageBytes != null)
-                                  Container(
-                                    width: double.infinity,
-                                    height: isTablet ? 180 : 150,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(12.r),
-                                      color: Colors.grey[200],
-                                    ),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(12.r),
-                                      child: Image.memory(
-                                        imageBytes!,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                  )
-                                else
-                                  Container(
-                                    width: double.infinity,
-                                    height: isTablet ? 180 : 150,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(12.r),
-                                      color: Colors.grey[200],
-                                    ),
-                                    child: Icon(Icons.image, size: isTablet ? 50.sp : 40.sp),
-                                  ),
-                                SizedBox(height: 8.h),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: ElevatedButton.icon(
-                                        onPressed: () {
-                                          showImageSourceBottomSheet(context);
-                                        },
-                                        icon: Icon(Icons.upload_file, color: AppColors.white),
-                                        label: Text(
-                                          'Upload Invoice Image',
-                                          style: TextStyle(
-                                            color: AppColors.white,
-                                            fontSize: isTablet ? 16.sp : 14.sp,
-                                          ),
-                                        ),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: AppColors.primary,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(12.r),
-                                          ),
-                                          padding: EdgeInsets.symmetric(
-                                            horizontal: isTablet ? 28.w : 24.w,
-                                            vertical: isTablet ? 16.h : 12.h,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    if (imageBytes != null) ...[
-                                      SizedBox(width: 8.w),
-                                      IconButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            imageBytes = null;
-                                            base64String = null;
-                                          });
-                                          bottomSheetSetState(() {});
-                                        },
-                                        icon: Icon(Icons.delete, color: Colors.red, size: isTablet ? 28.sp : 24.sp),
-                                        style: IconButton.styleFrom(
-                                          backgroundColor: Colors.red.withOpacity(0.1),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(8.r),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        Expanded(
-                          child: BlocBuilder<PaymentMethodsCubit, PaymentMethodsStates>(
-                            bloc: paymentMethodsCubit,
-                            builder: (context, state) {
-                              if (state is PaymentMethodsLoadingState) {
-                                return Center(
-                                  child: CircularProgressIndicator(
-                                    color: AppColors.primary,
-                                  ),
-                                );
-                              } else if (state is PaymentMethodsSuccessState) {
-                                final methods = [
-                                  PaymentMethodEntity(
-                                    id: 'Wallet',
-                                    payment: 'Wallet',
-                                    paymentType: 'Wallet',
-                                    description: 'Pay using your wallet balance',
-                                    logo: '',
-                                  ),
-                                  ...?state.paymentMethodsResponse.paymentMethods,
-                                ];
-                                return ListView.builder(
-                                  padding: EdgeInsets.all(isTablet ? 20.w : 16.w),
-                                  itemCount: methods.length,
-                                  itemBuilder: (context, index) {
-                                    final method = methods[index];
-                                    final isSelected = selectedPaymentMethodId == method.id;
-                                    return GestureDetector(
-                                      onTap: () {
-                                        bottomSheetSetState(() {
-                                          selectedPaymentMethodId = method.id;
-                                        });
-                                      },
-                                      child: Container(
-                                        margin: EdgeInsets.only(bottom: 16.h),
-                                        decoration: BoxDecoration(
-                                          gradient: LinearGradient(
-                                            colors: isSelected
-                                                ? [AppColors.primary.withOpacity(0.3), AppColors.primary.withOpacity(0.1)]
-                                                : [AppColors.white, AppColors.lightGray],
-                                            begin: Alignment.topLeft,
-                                            end: Alignment.bottomRight,
-                                          ),
-                                          borderRadius: BorderRadius.circular(16.r),
-                                          border: Border.all(
-                                            color: isSelected ? AppColors.primary : AppColors.grey[300]!,
-                                            width: isSelected ? 3.w : 1.w,
-                                          ),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: AppColors.grey.withOpacity(isSelected ? 0.3 : 0.15),
-                                              spreadRadius: 1,
-                                              blurRadius: 8,
-                                              offset: Offset(0, 3.h),
-                                            ),
-                                          ],
-                                        ),
-                                        child: Column(
-                                          children: [
-                                            Container(
-                                              padding: EdgeInsets.all(isTablet ? 24.w : 20.w),
-                                              child: Row(
-                                                children: [
-                                                  Container(
-                                                    width: isTablet ? 70.w : 60.w,
-                                                    height: isTablet ? 70.h : 60.h,
-                                                    decoration: BoxDecoration(
-                                                      borderRadius: BorderRadius.circular(12.r),
-                                                      boxShadow: [
-                                                        BoxShadow(
-                                                          color: AppColors.grey.withOpacity(0.2),
-                                                          spreadRadius: 1,
-                                                          blurRadius: 4,
-                                                          offset: Offset(0, 2.h),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    child: ClipRRect(
-                                                      borderRadius: BorderRadius.circular(12.r),
-                                                      child: method.logo != null && method.logo!.isNotEmpty
-                                                          ? Image.network(
-                                                        method.logo!,
-                                                        fit: BoxFit.cover,
-                                                        errorBuilder: (context, _, __) => Container(
-                                                          color: AppColors.lightGray,
-                                                          child: Icon(
-                                                            Icons.payment,
-                                                            color: AppColors.primary,
-                                                            size: isTablet ? 32.sp : 28.sp,
-                                                          ),
-                                                        ),
-                                                      )
-                                                          : Container(
-                                                        color: AppColors.lightGray,
-                                                        child: Icon(
-                                                          method.paymentType?.toLowerCase() == 'wallet'
-                                                              ? Icons.account_balance_wallet
-                                                              : Icons.payment,
-                                                          color: AppColors.primary,
-                                                          size: isTablet ? 32.sp : 28.sp,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  SizedBox(width: isTablet ? 20.w : 16.w),
-                                                  Expanded(
-                                                    child: Column(
-                                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                                      children: [
-                                                        Text(
-                                                          method.payment ?? "Unknown Payment",
-                                                          style: TextStyle(
-                                                            fontSize: isTablet ? 20.sp : 18.sp,
-                                                            fontWeight: FontWeight.bold,
-                                                            color: isSelected ? AppColors.primary : AppColors.darkGray,
-                                                          ),
-                                                        ),
-                                                        SizedBox(height: 4.h),
-                                                        Container(
-                                                          padding: EdgeInsets.symmetric(
-                                                            horizontal: isTablet ? 14.w : 12.w,
-                                                            vertical: isTablet ? 6.h : 4.h,
-                                                          ),
-                                                          decoration: BoxDecoration(
-                                                            color: _getPaymentTypeColor(method.paymentType),
-                                                            borderRadius: BorderRadius.circular(12.r),
-                                                          ),
-                                                          child: Text(
-                                                            _getPaymentTypeText(method.paymentType),
-                                                            style: TextStyle(
-                                                              color: AppColors.white,
-                                                              fontSize: isTablet ? 14.sp : 12.sp,
-                                                              fontWeight: FontWeight.w600,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  if (isSelected)
-                                                    Icon(
-                                                      Icons.check_circle,
-                                                      color: AppColors.primary,
-                                                      size: isTablet ? 28.sp : 24.sp,
-                                                    ),
-                                                ],
-                                              ),
-                                            ),
-                                            if (method.description != null && method.description!.isNotEmpty)
-                                              Container(
-                                                width: double.infinity,
-                                                padding: EdgeInsets.fromLTRB(
-                                                    isTablet ? 24.w : 20.w,
-                                                    0,
-                                                    isTablet ? 24.w : 20.w,
-                                                    10.h
-                                                ),
-                                                child: Container(
-                                                  padding: EdgeInsets.all(isTablet ? 20.w : 16.w),
-                                                  decoration: BoxDecoration(
-                                                    color: AppColors.lightGray,
-                                                    borderRadius: BorderRadius.circular(12.r),
-                                                    border: Border.all(color: AppColors.grey[200]!),
-                                                  ),
-                                                  child: Text(
-                                                    method.description!,
-                                                    style: TextStyle(
-                                                      fontSize: isTablet ? 18.sp : 16.sp,
-                                                      color: AppColors.grey[800],
-                                                      height: 1.4,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            if (method.paymentType?.toLowerCase() == 'phone' && method.description != null)
-                                              Padding(
-                                                padding: EdgeInsets.fromLTRB(
-                                                    isTablet ? 24.w : 20.w,
-                                                    0,
-                                                    isTablet ? 24.w : 20.w,
-                                                    10.h
-                                                ),
-                                                child: ElevatedButton.icon(
-                                                  onPressed: () async {
-                                                    await Clipboard.setData(ClipboardData(text: method.description!));
-                                                    if (mounted) {
-                                                      ScaffoldMessenger.of(context).showSnackBar(
-                                                        const SnackBar(
-                                                          content: Text('Payment number copied to clipboard'),
-                                                          backgroundColor: AppColors.green,
-                                                        ),
-                                                      );
-                                                    }
-                                                  },
-                                                  icon: Icon(Icons.copy, size: isTablet ? 18.sp : 16.sp, color: AppColors.white),
-                                                  label: Text(
-                                                    'Copy Payment Number',
-                                                    style: TextStyle(
-                                                        fontSize: isTablet ? 16.sp : 14.sp,
-                                                        color: AppColors.white
-                                                    ),
-                                                  ),
-                                                  style: ElevatedButton.styleFrom(
-                                                    backgroundColor: AppColors.blue,
-                                                    shape: RoundedRectangleBorder(
-                                                      borderRadius: BorderRadius.circular(8.r),
-                                                    ),
-                                                    padding: EdgeInsets.symmetric(
-                                                        horizontal: isTablet ? 20.w : 16.w,
-                                                        vertical: isTablet ? 12.h : 8.h
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            if ((method.paymentType?.toLowerCase() == 'link' || method.paymentType?.toLowerCase() == 'integration') &&
-                                                method.description != null)
-                                              Padding(
-                                                padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 10.h),
-                                                child: ElevatedButton.icon(
-                                                  onPressed: () async {
-                                                    final url = method.description!;
-                                                    final uri = Uri.tryParse(url);
-                                                    if (uri != null && await canLaunchUrl(uri)) {
-                                                      await launchUrl(uri, mode: LaunchMode.externalApplication);
-                                                    } else {
-                                                      if (mounted) {
-                                                        ScaffoldMessenger.of(context).showSnackBar(
-                                                          const SnackBar(
-                                                            content: Text('Could not open payment link'),
-                                                            backgroundColor: AppColors.red,
-                                                          ),
-                                                        );
-                                                      }
-                                                    }
-                                                  },
-                                                  icon: Icon(Icons.link, size: 16.sp, color: AppColors.white),
-                                                  label: Text(
-                                                    'Open Payment Link',
-                                                    style: TextStyle(fontSize: 14.sp, color: AppColors.white),
-                                                  ),
-                                                  style: ElevatedButton.styleFrom(
-                                                    backgroundColor: AppColors.purple,
-                                                    shape: RoundedRectangleBorder(
-                                                      borderRadius: BorderRadius.circular(8.r),
-                                                    ),
-                                                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                                                  ),
-                                                ),
-                                              ),
-                                          ],
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                );
-                              } else if (state is PaymentMethodsErrorState) {
-                                return Center(
-                                  child: Text(
-                                    'Failed to load payment methods',
-                                    style: TextStyle(
-                                      fontSize: 16.sp,
-                                      color: AppColors.grey[600],
-                                    ),
-                                  ),
-                                );
-                              } else {
-                                return SizedBox();
-                              }
-                            },
-                          ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.all(16.w),
-                          child: ElevatedButton(
-                            onPressed: (selectedPaymentMethodId != null &&
-                                (selectedPaymentMethodId == 'Wallet' || base64String != null))
-                                ? confirmPurchase
-                                : null,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12.r),
-                              ),
-                              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
-                            ),
-                            child: Text(
-                              'Confirm Purchase',
-                              style: TextStyle(
-                                color: AppColors.white,
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        ),
-      ),
-    );
-
-    paymentMethodsCubit.getPaymentMethods(userId: SelectedStudent.studentId);
-  }
-
-  Color _getPaymentTypeColor(String? type) {
-    switch (type?.toLowerCase()) {
-      case 'phone':
-        return AppColors.green;
-      case 'link':
-        return AppColors.blue;
-      case 'integration':
-        return AppColors.purple;
-      case 'text':
-        return AppColors.orange;
-      case 'wallet':
-        return AppColors.yellow;
-      default:
-        return AppColors.grey[500]!;
-    }
-  }
-
-  String _getPaymentTypeText(String? type) {
-    switch (type?.toLowerCase()) {
-      case 'phone':
-        return 'Phone';
-      case 'link':
-        return 'Link';
-      case 'integration':
-        return 'Online';
-      case 'text':
-        return 'Manual';
-      case 'wallet':
-        return 'Wallet';
-      default:
-        return 'Other';
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -827,21 +87,24 @@ class _BuyCourseScreenState extends State<BuyCourseScreen> with TickerProviderSt
           if (state is CoursesLoadingState) {
             return _buildLoadingState();
           } else if (state is CoursesErrorState) {
-            return _buildErrorState(state.error.errorMsg, () {
-              context.read<CoursesCubit>().getCoursesList();
-            });
+            return _buildErrorState(state.error.errorMsg);
           } else if (state is CoursesSuccessState) {
             final allCourses = _getAllCourses(state.coursesResponseEntity);
             if (allCourses.isEmpty) return _buildEmptyState();
 
-            final filteredCourses = _filterCourses(allCourses, state.coursesResponseEntity.categories ?? []);
+            final filteredCourses = _filterCourses(
+              allCourses,
+              state.coursesResponseEntity.categories ?? [],
+            );
 
             return FadeTransition(
               opacity: _fadeAnimation,
               child: Column(
                 children: [
                   _buildSearchBar(),
-                  _buildCategoryFilter(state.coursesResponseEntity.categories ?? []),
+                  _buildCategoryFilter(
+                    state.coursesResponseEntity.categories ?? [],
+                  ),
                   _buildCoursesHeader(filteredCourses.length),
                   Expanded(child: _buildCoursesList(filteredCourses)),
                 ],
@@ -854,7 +117,7 @@ class _BuyCourseScreenState extends State<BuyCourseScreen> with TickerProviderSt
     );
   }
 
-  Widget _buildSearchBar(){
+  Widget _buildSearchBar() {
     return Container(
       margin: EdgeInsets.all(16.r),
       decoration: BoxDecoration(
@@ -885,10 +148,7 @@ class _BuyCourseScreenState extends State<BuyCourseScreen> with TickerProviderSt
           )
               : null,
           border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(
-            horizontal: 16.w,
-            vertical: 12.h,
-          ),
+          contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
         ),
       ),
     );
@@ -903,9 +163,10 @@ class _BuyCourseScreenState extends State<BuyCourseScreen> with TickerProviderSt
         scrollDirection: Axis.horizontal,
         children: [
           _buildCategoryChip(null, 'All'),
-          ...categories
-              .map((category) => _buildCategoryChip(category.id, category.categoryName ?? 'Category'))
-              .toList(),
+          ...categories.map((category) => _buildCategoryChip(
+            category.id,
+            category.categoryName ?? 'Category',
+          )),
         ],
       ),
     );
@@ -976,9 +237,7 @@ class _BuyCourseScreenState extends State<BuyCourseScreen> with TickerProviderSt
 
   Widget _buildCoursesList(List<CourseEntity> courses) {
     return RefreshIndicator(
-      onRefresh: () async {
-        context.read<CoursesCubit>().getCoursesList();
-      },
+      onRefresh: () async => context.read<CoursesCubit>().getCoursesList(),
       color: AppColors.primary,
       child: ListView.builder(
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
@@ -987,34 +246,23 @@ class _BuyCourseScreenState extends State<BuyCourseScreen> with TickerProviderSt
           return AnimatedBuilder(
             animation: _animationController,
             builder: (context, child) {
-              final delayedAnimation = Tween<double>(
-                begin: 0.0,
-                end: 1.0,
-              ).animate(
-                CurvedAnimation(
-                  parent: _animationController,
-                  curve: Interval(
-                    (index * 0.1).clamp(0.0, 1.0),
-                    ((index * 0.1) + 0.2).clamp(0.0, 1.0),
-                    curve: Curves.easeOutBack,
-                  ),
+              final delayedAnimation = Tween<double>(begin: 0.0, end: 1.0)
+                  .animate(CurvedAnimation(
+                parent: _animationController,
+                curve: Interval(
+                  (index * 0.1).clamp(0.0, 1.0),
+                  ((index * 0.1) + 0.2).clamp(0.0, 1.0),
+                  curve: Curves.easeOutBack,
                 ),
-              );
+              ));
               return Transform.translate(
-                offset: Offset(
-                  0,
-                  50.h * (1 - delayedAnimation.value.clamp(0.0, 1.0)),
-                ),
+                offset: Offset(0, 50.h * (1 - delayedAnimation.value.clamp(0.0, 1.0))),
                 child: Opacity(
                   opacity: delayedAnimation.value.clamp(0.0, 1.0),
                   child: CourseCard(
                     course: courses[index],
-                    onTap: () {
-                      _navigateToCourseDetails(courses[index]);
-                    },
-                    onBuy: () {
-                      _showPaymentMethodsBottomSheet(course: courses[index]);
-                    },
+                    onTap: () => _navigateToCourseDetails(courses[index]),
+                    onBuy: () => _showPaymentMethodsBottomSheet(course: courses[index]),
                   ),
                 ),
               );
@@ -1036,10 +284,7 @@ class _BuyCourseScreenState extends State<BuyCourseScreen> with TickerProviderSt
               color: AppColors.primary.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: CircularProgressIndicator(
-              color: AppColors.primary,
-              strokeWidth: 3.w,
-            ),
+            child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 3.w),
           ),
           SizedBox(height: 24.h),
           Text(
@@ -1055,7 +300,7 @@ class _BuyCourseScreenState extends State<BuyCourseScreen> with TickerProviderSt
     );
   }
 
-  Widget _buildErrorState(String error, VoidCallback onRetry) {
+  Widget _buildErrorState(String error) {
     return Center(
       child: Container(
         margin: EdgeInsets.all(32.r),
@@ -1080,11 +325,7 @@ class _BuyCourseScreenState extends State<BuyCourseScreen> with TickerProviderSt
                 color: AppColors.red.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                Icons.error_outline,
-                size: 48.r,
-                color: AppColors.red,
-              ),
+              child: Icon(Icons.error_outline, size: 48.r, color: AppColors.red),
             ),
             SizedBox(height: 16.h),
             Text(
@@ -1107,20 +348,15 @@ class _BuyCourseScreenState extends State<BuyCourseScreen> with TickerProviderSt
             ),
             SizedBox(height: 24.h),
             ElevatedButton(
-              onPressed: onRetry,
+              onPressed: () => context.read<CoursesCubit>().getCoursesList(),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: AppColors.white,
                 padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 12.h),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
                 elevation: 2,
               ),
-              child: Text(
-                'Try Again',
-                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14.sp),
-              ),
+              child: Text('Try Again', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14.sp)),
             ),
           ],
         ),
@@ -1153,11 +389,7 @@ class _BuyCourseScreenState extends State<BuyCourseScreen> with TickerProviderSt
                 color: AppColors.primary.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                Icons.school_outlined,
-                size: 48.sp,
-                color: AppColors.primary,
-              ),
+              child: Icon(Icons.school_outlined, size: 48.sp, color: AppColors.primary),
             ),
             SizedBox(height: 16.h),
             Text(
@@ -1179,6 +411,41 @@ class _BuyCourseScreenState extends State<BuyCourseScreen> with TickerProviderSt
     );
   }
 
+  // Helper methods
+  List<CourseEntity> _filterCourses(List<CourseEntity> courses, List<CategoriesEntity> categories) {
+    List<CourseEntity> filteredCourses = courses.where((course) {
+      return (course.courseName?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false) ||
+          (course.courseDescription?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false);
+    }).toList();
+
+    if (_selectedCategoryId != null) {
+      final selectedCategory = categories.firstWhere(
+            (category) => category.id == _selectedCategoryId,
+        orElse: () => CategoriesEntity(),
+      );
+      if (selectedCategory.course != null) {
+        filteredCourses = filteredCourses.where((course) {
+          return selectedCategory.course!.any((c) => c.id == course.id);
+        }).toList();
+      } else {
+        filteredCourses = [];
+      }
+    }
+    return filteredCourses;
+  }
+
+  List<CourseEntity> _getAllCourses(CoursesResponseEntity coursesResponse) {
+    List<CourseEntity> allCourses = [];
+    if (coursesResponse.categories != null) {
+      for (var category in coursesResponse.categories!) {
+        if (category.course != null) {
+          allCourses.addAll(category.course!);
+        }
+      }
+    }
+    return allCourses;
+  }
+
   void _navigateToCourseDetails(CourseEntity course) {
     showModalBottomSheet(
       context: context,
@@ -1190,86 +457,72 @@ class _BuyCourseScreenState extends State<BuyCourseScreen> with TickerProviderSt
 
   Widget _buildCourseDetailsBottomSheet(CourseEntity course) {
     return DraggableScrollableSheet(
-      initialChildSize: 0.8,
+      initialChildSize: 0.6,
       minChildSize: 0.4,
-      maxChildSize: 0.9,
+      maxChildSize: 0.85,
       builder: (context, scrollController) {
         return Container(
           decoration: BoxDecoration(
             color: AppColors.white,
             borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(20),
-              topRight: Radius.circular(20),
+              topLeft: Radius.circular(20.r),
+              topRight: Radius.circular(20.r),
             ),
           ),
           child: ListView(
             controller: scrollController,
-            padding: EdgeInsets.all(16),
+            padding: EdgeInsets.all(16.w),
             children: [
-              // الخط اللي فوق
               Center(
                 child: Container(
-                  width: 40,
-                  height: 4,
-                  margin: EdgeInsets.only(bottom: 16),
+                  width: 40.w,
+                  height: 4.h,
+                  margin: EdgeInsets.only(bottom: 16.h),
                   decoration: BoxDecoration(
                     color: AppColors.grey[300],
-                    borderRadius: BorderRadius.circular(2),
+                    borderRadius: BorderRadius.circular(2.r),
                   ),
                 ),
               ),
-
               if (course.courseImage != null && course.courseImage!.isNotEmpty)
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12.r),
                   child: Image.network(
                     course.courseImage!,
-                    height: 200,
+                    height: 200.h,
                     width: double.infinity,
                     fit: BoxFit.cover,
                   ),
                 ),
-
-              SizedBox(height: 16),
-
+              SizedBox(height: 16.h),
               Text(
                 course.courseName ?? "Course Name",
                 style: TextStyle(
-                  fontSize: 22,
+                  fontSize: 22.sp,
                   fontWeight: FontWeight.bold,
                   color: AppColors.primary,
                 ),
               ),
-
-              SizedBox(height: 8),
-
-              if (course.courseDescription != null &&
-                  course.courseDescription!.isNotEmpty)
+              SizedBox(height: 8.h),
+              if (course.courseDescription != null && course.courseDescription!.isNotEmpty)
                 Text(
                   course.courseDescription!,
-                  style: TextStyle(
-                    fontSize: 16,
-                    height: 1.5,
-                    color: AppColors.gray,
-                  ),
+                  style: TextStyle(fontSize: 16.sp, height: 1.5, color: AppColors.gray),
                 ),
-
-              SizedBox(height: 20),
-
-              // Chapters
+              SizedBox(height: 20.h),
               if (course.chapters != null && course.chapters!.isNotEmpty) ...[
                 Text(
                   "Course Chapters",
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 16.sp,
                     fontWeight: FontWeight.bold,
                     color: AppColors.primary,
                   ),
                 ),
-                SizedBox(height: 12),
+                SizedBox(height: 12.h),
                 ...course.chapters!.map(
                       (chapter) => Card(
-                    margin: EdgeInsets.only(bottom: 8),
+                    margin: EdgeInsets.only(bottom: 8.h),
                     color: AppColors.white,
                     child: ExpansionTile(
                       title: Text(
@@ -1293,21 +546,14 @@ class _BuyCourseScreenState extends State<BuyCourseScreen> with TickerProviderSt
                             chapter: chapter,
                           );
                         },
-                        child: Text(
-                          "Buy",
-                          style: TextStyle(color: AppColors.primary),
-                        ),
+                        child: Text("Buy", style: TextStyle(color: AppColors.primary)),
                       )
                           : null,
                       children: [
-                        if (chapter.lessons != null &&
-                            chapter.lessons!.isNotEmpty)
+                        if (chapter.lessons != null && chapter.lessons!.isNotEmpty)
                           ...chapter.lessons!.map(
                                 (lesson) => ListTile(
-                              leading: Icon(
-                                Icons.play_circle_outline,
-                                color: AppColors.primary,
-                              ),
+                              leading: Icon(Icons.play_circle_outline, color: AppColors.primary),
                               title: Text(
                                 lesson.lessonName ?? "Lesson",
                                 style: TextStyle(color: AppColors.darkGrey),
@@ -1319,13 +565,10 @@ class _BuyCourseScreenState extends State<BuyCourseScreen> with TickerProviderSt
                   ),
                 ),
               ],
-
-              SizedBox(height: 20),
-
-              // السعر
+              SizedBox(height: 20.h),
               if (course.price != null)
                 Container(
-                  padding: EdgeInsets.all(16),
+                  padding: EdgeInsets.all(16.w),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
@@ -1335,7 +578,7 @@ class _BuyCourseScreenState extends State<BuyCourseScreen> with TickerProviderSt
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.r),
                     border: Border.all(color: AppColors.green),
                   ),
                   child: Column(
@@ -1343,29 +586,27 @@ class _BuyCourseScreenState extends State<BuyCourseScreen> with TickerProviderSt
                       Text(
                         "Course Price",
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 16.sp,
                           fontWeight: FontWeight.bold,
                           color: AppColors.gray,
                         ),
                       ),
-                      SizedBox(height: 8),
+                      SizedBox(height: 8.h),
                       Text(
                         "${course.price} EGP",
                         style: TextStyle(
-                          fontSize: 24,
+                          fontSize: 24.sp,
                           fontWeight: FontWeight.bold,
                           color: AppColors.green,
                         ),
                       ),
-                      SizedBox(height: 8),
+                      SizedBox(height: 8.h),
                       CustomElevatedButton(
-                          text: 'Buy Course',
-                          onPressed: (){
-                            _showPaymentMethodsBottomSheet(course: course);
-                          },
-                          backgroundColor: AppColors.primaryColor,
-                          textStyle: TextStyle(color: AppColors.white)
-                      )
+                        text: 'Buy Course',
+                        onPressed: () => _showPaymentMethodsBottomSheet(course: course),
+                        backgroundColor: AppColors.primaryColor,
+                        textStyle: TextStyle(color: AppColors.white),
+                      ),
                     ],
                   ),
                 ),
@@ -1376,230 +617,932 @@ class _BuyCourseScreenState extends State<BuyCourseScreen> with TickerProviderSt
     );
   }
 
-  Widget _buildDetailChip(String label, String value, IconData icon, Color color) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(8.r),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            size: 14.sp,
-            color: color,
-          ),
-          SizedBox(width: 4.w),
-          Text(
-            '$label: $value',
-            style: TextStyle(
-              fontSize: 12.sp,
-              fontWeight: FontWeight.w500,
-              color: AppColors.grey[700],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  void _showPaymentMethodsBottomSheet({required CourseEntity course, ChaptersEntity? chapter}) {
+    final paymentMethodsCubit = getIt<PaymentMethodsCubit>();
+    final buyCourseCubit = getIt<BuyCourseCubit>();
+    final buyChapterCubit = getIt<BuyChapterCubit>();
+    final promoCodeCubit = getIt<PromoCodeCubit>();
 
-  Widget _buildChapterTile(ChaptersEntity chapter, CourseEntity course) {
-    return BlocProvider.value(
-      value: chapterDataCubit,
-      child: Container(
-        margin: EdgeInsets.only(bottom: 8.h),
-        decoration: BoxDecoration(
-          color: AppColors.white,
-          borderRadius: BorderRadius.circular(8.r),
-          border: Border.all(color: AppColors.grey[300]!),
-        ),
-        child: ExpansionTile(
-          tilePadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
-          title: Text(
-            chapter.chapterName ?? 'Chapter Name',
-            style: TextStyle(
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w600,
-              color: AppColors.primary,
-            ),
-          ),
-          subtitle: chapter.chapterPrice != null
-              ? Text(
-            'Price: ${chapter.chapterPrice} EGP',
-            style: TextStyle(
-              fontSize: 12.sp,
-              color: AppColors.green,
-            ),
-          )
-              : null,
-          trailing: chapter.chapterPrice != null
-              ? Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CustomElevatedButton(
-                backgroundColor: AppColors.primaryLight,
-                text: "Buy Chapter",
-                onPressed: () {
-                  _showPaymentMethodsBottomSheet(course: course, chapter: chapter);
-                },
-                textStyle: TextStyle(fontSize: 12.sp, color: AppColors.primary),
-              ),
-            ],
-          )
-              : null,
-          onExpansionChanged: (expanded) {
-            if (expanded && chapter.id != null) {
-              chapterDataCubit.getChapterData(chapter.id!);
-            }
-          },
-          children: [
-            BlocBuilder<ChapterDataCubit, ChapterDataStates>(
-              bloc: chapterDataCubit,
-              builder: (context, state) {
-                if (state is ChapterDataLoadingState) {
-                  return Padding(
-                    padding: EdgeInsets.all(16.w),
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.primary,
+    dynamic selectedPaymentMethodId = 'Wallet';
+    double? newPrice; // Updated: Track new_price from API response
+    final TextEditingController promoController = TextEditingController();
+    bool isPromoExpanded = false;
+
+    setState(() {
+      imageBytes = null;
+      base64String = null;
+    });
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      constraints: BoxConstraints(maxWidth: isDesktop ? 600 : double.infinity),
+      enableDrag: true,
+      isDismissible: true,
+      builder: (context) => StatefulBuilder(
+        builder: (BuildContext context, StateSetter setModalState) {
+          // Updated: Calculate final price using new logic
+          double originalPrice = chapter == null
+              ? (course.price?.toDouble() ?? 0.0)
+              : (chapter.chapterPrice?.toDouble() ?? 0.0);
+
+          double finalPrice = newPrice ?? originalPrice; // Use new_price if available, otherwise original
+
+          return DraggableScrollableSheet(
+            initialChildSize: 0.6,
+            minChildSize: 0.4,
+            maxChildSize: 0.9,
+            expand: false,
+            builder: (context, scrollController) {
+              return MultiBlocProvider(
+                providers: [
+                  BlocProvider.value(value: paymentMethodsCubit),
+                  BlocProvider.value(value: buyCourseCubit),
+                  BlocProvider.value(value: buyChapterCubit),
+                  BlocProvider.value(value: promoCodeCubit),
+                ],
+                child: MultiBlocListener(
+                  listeners: [
+                    BlocListener<BuyCourseCubit, BuyCourseStates>(
+                      listener: (context, state) {
+                        if (state is BuyCourseSuccessState) {
+                          showTopSnackBar(context,
+                              'Course "${state.response.course?.courseName ?? 'Unknown'}" purchased successfully!',
+                              AppColors.green);
+                          Navigator.pop(context);
+                        } else if (state is BuyCourseErrorState) {
+                          showTopSnackBar(context,
+                              'Please Check the balance of wallet or select invalid payment method',
+                              AppColors.primaryColor);
+                        }
+                      },
+                    ),
+                    BlocListener<BuyChapterCubit, BuyChapterStates>(
+                      listener: (context, state) {
+                        if (state is BuyChapterSuccessState) {
+                          showTopSnackBar(context,
+                              'Chapter "${state.model.chapters?.first.chapterName ?? 'Unknown'}" purchased successfully!',
+                              AppColors.green);
+                          Navigator.pop(context);
+                        } else if (state is BuyChapterErrorState) {
+                          showTopSnackBar(context,
+                              "Please Check the balance of wallet or select invalid payment method",
+                              AppColors.primaryColor);
+                        }
+                      },
+                    ),
+                    BlocListener<PromoCodeCubit, PromoCodeStates>(
+                      listener: (context, state) {
+                        if (state is PromoCodeSuccessState) {
+                          setModalState(() {
+                            // Updated: Use new_price from API response
+                            newPrice = state.response.newPrice?.toDouble();
+                          });
+                          showTopSnackBar(context, 'Promo code applied successfully!', AppColors.green);
+                        } else if (state is PromoCodeErrorState) {
+                          showTopSnackBar(context, state.error, AppColors.red);
+                        }
+                      },
+                    ),
+                  ],
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.white,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(20.r),
+                        topRight: Radius.circular(20.r),
                       ),
                     ),
-                  );
-                } else if (state is ChapterDataSuccessState) {
-                  final chapterData = state.chapterData;
-                  return Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Chapter Details:',
-                          style: TextStyle(
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primary,
+                        // Handle
+                        Container(
+                          width: 40.w,
+                          height: 4.h,
+                          margin: EdgeInsets.only(top: 12.h),
+                          decoration: BoxDecoration(
+                            color: AppColors.grey[300],
+                            borderRadius: BorderRadius.circular(2.r),
                           ),
                         ),
-                        SizedBox(height: 8.h),
-                        Wrap(
-                          spacing: 8.w,
-                          runSpacing: 8.h,
-                          children: [
-                            _buildDetailChip(
-                              'Videos',
-                              '${chapterData.videos}',
-                              Icons.video_library,
-                              AppColors.red,
-                            ),
-                            _buildDetailChip(
-                              'Chapters',
-                              '${chapterData.chapters}',
-                              Icons.menu_book,
-                              AppColors.blue,
-                            ),
-                            _buildDetailChip(
-                              'Lessons',
-                              '${chapterData.lessons}',
-                              Icons.school,
-                              AppColors.green,
-                            ),
-                            _buildDetailChip(
-                              'Questions',
-                              '${chapterData.questions}',
-                              Icons.quiz,
-                              AppColors.orange,
-                            ),
-                            _buildDetailChip(
-                              'Quizzes',
-                              '${chapterData.quizzes}',
-                              Icons.assignment,
-                              AppColors.purple,
-                            ),
-                            _buildDetailChip(
-                              'PDFs',
-                              '${chapterData.pdfs}',
-                              Icons.picture_as_pdf,
-                              AppColors.yellow,
-                            ),
-                          ],
-                        ),
-                        if (chapter.lessons?.isNotEmpty ?? false) ...[
-                          SizedBox(height: 12.h),
-                          Text(
-                            'Chapter Lessons:',
+                        // Header
+                        Padding(
+                          padding: EdgeInsets.all(16.w),
+                          child: Text(
+                            'Select Payment Method',
                             style: TextStyle(
-                              fontSize: 12.sp,
-                              fontWeight: FontWeight.bold,
+                              fontSize: 18.sp,
+                              fontWeight: FontWeight.w600,
                               color: AppColors.primary,
                             ),
                           ),
-                          SizedBox(height: 8.h),
-                          ...chapter.lessons!
-                              .map(
-                                (lesson) => Padding(
-                              padding: EdgeInsets.only(bottom: 4.h),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.play_circle_outline,
-                                    size: 16.sp,
-                                    color: AppColors.primary,
+                        ),
+                        // Content
+                        Expanded(
+                          child: ListView(
+                            controller: scrollController,
+                            padding: EdgeInsets.symmetric(horizontal: 16.w),
+                            children: [
+                              // Course/Chapter info
+                              Text(
+                                chapter == null
+                                    ? 'Course: ${course.courseName ?? 'Unknown'}'
+                                    : 'Chapter: ${chapter.chapterName ?? 'Unknown'}',
+                                style: TextStyle(
+                                  fontSize: 16.sp,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.grey[800],
+                                ),
+                              ),
+                              SizedBox(height: 12.h),
+
+                              // Promo Code Section - Only for Courses
+                              if (chapter == null) ...[
+                                BlocBuilder<PromoCodeCubit, PromoCodeStates>(
+                                  builder: (context, promoState) {
+                                    return Container(
+                                      decoration: BoxDecoration(
+                                        color: AppColors.grey[50],
+                                        borderRadius: BorderRadius.circular(12.r),
+                                        border: Border.all(color: AppColors.grey[200]!),
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          InkWell(
+                                            onTap: () {
+                                              setModalState(() {
+                                                isPromoExpanded = !isPromoExpanded;
+                                              });
+                                            },
+                                            child: Container(
+                                              padding: EdgeInsets.all(16.w),
+                                              child: Row(
+                                                children: [
+                                                  Icon(Icons.local_offer, color: AppColors.primary, size: 20.sp),
+                                                  SizedBox(width: 12.w),
+                                                  Text(
+                                                    'Promo Code',
+                                                    style: TextStyle(
+                                                      fontSize: 16.sp,
+                                                      fontWeight: FontWeight.w600,
+                                                      color: AppColors.primary,
+                                                    ),
+                                                  ),
+                                                  Spacer(),
+                                                  if (newPrice != null)
+                                                    Text(
+                                                      'Applied',
+                                                      style: TextStyle(
+                                                        fontSize: 12.sp,
+                                                        color: AppColors.green,
+                                                        fontWeight: FontWeight.w500,
+                                                      ),
+                                                    ),
+                                                  SizedBox(width: 8.w),
+                                                  Icon(
+                                                    isPromoExpanded
+                                                        ? Icons.keyboard_arrow_up
+                                                        : Icons.keyboard_arrow_down,
+                                                    color: AppColors.grey[600],
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                          if (isPromoExpanded)
+                                            Container(
+                                              padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
+                                              child: Column(
+                                                children: [
+                                                  Row(
+                                                    children: [
+                                                      Expanded(
+                                                        child: TextField(
+                                                          controller: promoController,
+                                                          keyboardType: TextInputType.number,
+                                                          inputFormatters: [
+                                                            FilteringTextInputFormatter.digitsOnly,
+                                                          ],
+                                                          decoration: InputDecoration(
+                                                            hintText: 'Enter promo code',
+                                                            border: OutlineInputBorder(
+                                                              borderRadius: BorderRadius.circular(8.r),
+                                                              borderSide: BorderSide(color: AppColors.grey[300]!),
+                                                            ),
+                                                            focusedBorder: OutlineInputBorder(
+                                                              borderRadius: BorderRadius.circular(8.r),
+                                                              borderSide: BorderSide(color: AppColors.primary),
+                                                            ),
+                                                            contentPadding: EdgeInsets.symmetric(
+                                                                horizontal: 12.w, vertical: 12.h),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      SizedBox(width: 8.w),
+                                                      ElevatedButton(
+                                                        onPressed: promoState is PromoCodeLoadingState
+                                                            ? null
+                                                            : () {
+                                                          if (promoController.text.isEmpty) {
+                                                            ScaffoldMessenger.of(context).showSnackBar(
+                                                              const SnackBar(
+                                                                content: Text('Please enter a promo code'),
+                                                                backgroundColor: Colors.red,
+                                                              ),
+                                                            );
+                                                            return;
+                                                          }
+                                                          final promoCode = int.tryParse(promoController.text);
+                                                          if (promoCode == null) {
+                                                            ScaffoldMessenger.of(context).showSnackBar(
+                                                              const SnackBar(
+                                                                content: Text('Please enter a valid promo code'),
+                                                                backgroundColor: Colors.red,
+                                                              ),
+                                                            );
+                                                            return;
+                                                          }
+                                                          promoCodeCubit.applyPromoCode(
+                                                            promoCode: promoCode,
+                                                            courseId: course.id!,
+                                                            userId: SelectedStudent.studentId,
+                                                            originalAmount: originalPrice,
+                                                          );
+                                                        },
+                                                        style: ElevatedButton.styleFrom(
+                                                          backgroundColor: AppColors.primary,
+                                                          shape: RoundedRectangleBorder(
+                                                            borderRadius: BorderRadius.circular(8.r),
+                                                          ),
+                                                          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                                                        ),
+                                                        child: promoState is PromoCodeLoadingState
+                                                            ? SizedBox(
+                                                          width: 20.w,
+                                                          height: 20.h,
+                                                          child: CircularProgressIndicator(
+                                                            color: AppColors.white,
+                                                            strokeWidth: 2,
+                                                          ),
+                                                        )
+                                                            : Text(
+                                                          'Apply',
+                                                          style: TextStyle(
+                                                            color: AppColors.white,
+                                                            fontSize: 14.sp,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  if (newPrice != null) ...[
+                                                    SizedBox(height: 12.h),
+                                                    Container(
+                                                      padding: EdgeInsets.all(12.w),
+                                                      decoration: BoxDecoration(
+                                                        color: AppColors.green.withOpacity(0.1),
+                                                        borderRadius: BorderRadius.circular(8.r),
+                                                        border: Border.all(color: AppColors.green.withOpacity(0.3)),
+                                                      ),
+                                                      child: Row(
+                                                        children: [
+                                                          Icon(Icons.check_circle, color: AppColors.green, size: 16.sp),
+                                                          SizedBox(width: 8.w),
+                                                          Expanded(
+                                                            child: Text(
+                                                              'Promo code applied! You save ${(originalPrice - newPrice!).toStringAsFixed(0)} EGP',
+                                                              style: TextStyle(
+                                                                fontSize: 12.sp,
+                                                                color: AppColors.green,
+                                                                fontWeight: FontWeight.w500,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          IconButton(
+                                                            onPressed: () {
+                                                              setModalState(() {
+                                                                newPrice = null;
+                                                                promoController.clear();
+                                                              });
+                                                            },
+                                                            icon: Icon(Icons.close, size: 16.sp, color: AppColors.red),
+                                                            padding: EdgeInsets.zero,
+                                                            constraints: BoxConstraints(minWidth: 24.w, minHeight: 24.h),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ],
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                ),
+                                SizedBox(height: 12.h),
+                              ],
+
+                              // Price Display
+                              Container(
+                                padding: EdgeInsets.all(16.w),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      AppColors.primary.withOpacity(0.1),
+                                      AppColors.primary.withOpacity(0.05),
+                                    ],
                                   ),
-                                  SizedBox(width: 8.w),
-                                  Expanded(
-                                    child: Text(
-                                      lesson.lessonName ?? 'Lesson Name',
-                                      style: TextStyle(
-                                        fontSize: 12.sp,
-                                        color: AppColors.grey[700],
+                                  borderRadius: BorderRadius.circular(12.r),
+                                  border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+                                ),
+                                child: Column(
+                                  children: [
+                                    if (newPrice != null && newPrice != originalPrice) ...[
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            'Original Price:',
+                                            style: TextStyle(
+                                              fontSize: 14.sp,
+                                              color: AppColors.grey[600],
+                                              decoration: TextDecoration.lineThrough,
+                                            ),
+                                          ),
+                                          Text(
+                                            '${originalPrice.toStringAsFixed(2)} EGP',
+                                            style: TextStyle(
+                                              fontSize: 14.sp,
+                                              color: AppColors.grey[600],
+                                              decoration: TextDecoration.lineThrough,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      SizedBox(height: 8.h),
+                                    ],
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          'Final Price:',
+                                          style: TextStyle(
+                                            fontSize: 16.sp,
+                                            fontWeight: FontWeight.bold,
+                                            color: AppColors.grey[800],
+                                          ),
+                                        ),
+                                        Text(
+                                          '${finalPrice.toStringAsFixed(2)} EGP',
+                                          style: TextStyle(
+                                            fontSize: 18.sp,
+                                            fontWeight: FontWeight.bold,
+                                            color: newPrice != null ? AppColors.green : AppColors.primary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              SizedBox(height: 12.h),
+                              Text(
+                                'Duration: ${chapter == null ? (course.allPrices?.isNotEmpty == true ? course.allPrices!.first.duration ?? 30 : 30) : (chapter.chapterAllPrices?.isNotEmpty == true ? chapter.chapterAllPrices!.first.duration ?? 30 : 30)} days',
+                                style: TextStyle(fontSize: 14.sp, color: AppColors.grey[700]),
+                              ),
+
+                              // Image Upload Section
+                              if (selectedPaymentMethodId != 'Wallet') ...[
+                                SizedBox(height: 16.h),
+                                if (imageBytes != null)
+                                  Container(
+                                    width: double.infinity,
+                                    height: 150.h,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(12.r),
+                                      color: Colors.grey[200],
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(12.r),
+                                      child: Image.memory(imageBytes!, fit: BoxFit.cover),
+                                    ),
+                                  )
+                                else
+                                  Container(
+                                    width: double.infinity,
+                                    height: 150.h,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(12.r),
+                                      color: Colors.grey[200],
+                                    ),
+                                    child: Icon(Icons.image, size: 40.sp),
+                                  ),
+                                SizedBox(height: 8.h),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: ElevatedButton.icon(
+                                        onPressed: () => _showImageSourceBottomSheet(context, setModalState),
+                                        icon: Icon(Icons.upload_file, color: AppColors.white),
+                                        label: Text(
+                                          'Upload Invoice Image',
+                                          style: TextStyle(color: AppColors.white, fontSize: 14.sp),
+                                        ),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: AppColors.primary,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(12.r),
+                                          ),
+                                          padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ],
+                                    if (imageBytes != null) ...[
+                                      SizedBox(width: 8.w),
+                                      IconButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            imageBytes = null;
+                                            base64String = null;
+                                          });
+                                          setModalState(() {});
+                                        },
+                                        icon: Icon(Icons.delete, color: Colors.red, size: 24.sp),
+                                        style: IconButton.styleFrom(
+                                          backgroundColor: Colors.red.withOpacity(0.1),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(8.r),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                                SizedBox(height: 16.h),
+                              ],
+
+                              // Payment Methods List
+                              BlocBuilder<PaymentMethodsCubit, PaymentMethodsStates>(
+                                bloc: paymentMethodsCubit,
+                                builder: (context, state) {
+                                  if (state is PaymentMethodsLoadingState) {
+                                    return Center(
+                                      child: CircularProgressIndicator(color: AppColors.primary),
+                                    );
+                                  } else if (state is PaymentMethodsSuccessState) {
+                                    final methods = [
+                                      PaymentMethodEntity(
+                                        id: 'Wallet',
+                                        payment: 'Wallet',
+                                        paymentType: 'Wallet',
+                                        description: 'Pay using your wallet balance',
+                                        logo: '',
+                                      ),
+                                      ...?state.paymentMethodsResponse.paymentMethods,
+                                    ];
+                                    return Column(
+                                      children: methods.map((method) {
+                                        final isSelected = selectedPaymentMethodId == method.id;
+                                        return GestureDetector(
+                                          onTap: () {
+                                            setModalState(() {
+                                              selectedPaymentMethodId = method.id;
+                                            });
+                                          },
+                                          child: Container(
+                                            margin: EdgeInsets.only(bottom: 16.h),
+                                            decoration: BoxDecoration(
+                                              gradient: LinearGradient(
+                                                colors: isSelected
+                                                    ? [
+                                                  AppColors.primary.withOpacity(0.3),
+                                                  AppColors.primary.withOpacity(0.1),
+                                                ]
+                                                    : [AppColors.white, AppColors.lightGray],
+                                                begin: Alignment.topLeft,
+                                                end: Alignment.bottomRight,
+                                              ),
+                                              borderRadius: BorderRadius.circular(16.r),
+                                              border: Border.all(
+                                                color: isSelected ? AppColors.primary : AppColors.grey[300]!,
+                                                width: isSelected ? 3.w : 1.w,
+                                              ),
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: AppColors.grey.withOpacity(isSelected ? 0.3 : 0.15),
+                                                  spreadRadius: 1,
+                                                  blurRadius: 8,
+                                                  offset: Offset(0, 3.h),
+                                                ),
+                                              ],
+                                            ),
+                                            child: Container(
+                                              padding: EdgeInsets.all(20.w),
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Row(
+                                                    children: [
+                                                      Container(
+                                                        width: 60.w,
+                                                        height: 60.h,
+                                                        decoration: BoxDecoration(
+                                                          borderRadius: BorderRadius.circular(12.r),
+                                                          color: AppColors.lightGray,
+                                                        ),
+                                                        child: method.logo != null && method.logo!.isNotEmpty
+                                                            ? ClipRRect(
+                                                          borderRadius: BorderRadius.circular(12.r),
+                                                          child: Image.network(
+                                                            method.logo ?? method.logo!,
+                                                            fit: BoxFit.cover,
+                                                            errorBuilder: (context, _, __) => Icon(
+                                                              Icons.payment,
+                                                              color: AppColors.primary,
+                                                              size: 28.sp,
+                                                            ),
+                                                          ),
+                                                        )
+                                                            : Icon(
+                                                          method.paymentType?.toLowerCase() == 'wallet'
+                                                              ? Icons.account_balance_wallet
+                                                              : Icons.payment,
+                                                          color: AppColors.primary,
+                                                          size: 28.sp,
+                                                        ),
+                                                      ),
+                                                      SizedBox(width: 16.w),
+                                                      Expanded(
+                                                        child: Column(
+                                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                                          children: [
+                                                            Text(
+                                                              method.payment ?? "Unknown Payment",
+                                                              style: TextStyle(
+                                                                fontSize: 18.sp,
+                                                                fontWeight: FontWeight.bold,
+                                                                color: isSelected ? AppColors.primary : AppColors.darkGray,
+                                                              ),
+                                                            ),
+                                                            SizedBox(height: 4.h),
+                                                            Container(
+                                                              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
+                                                              decoration: BoxDecoration(
+                                                                color: _getPaymentTypeColor(method.paymentType),
+                                                                borderRadius: BorderRadius.circular(12.r),
+                                                              ),
+                                                              child: Text(
+                                                                _getPaymentTypeText(method.paymentType),
+                                                                style: TextStyle(
+                                                                  color: AppColors.white,
+                                                                  fontSize: 12.sp,
+                                                                  fontWeight: FontWeight.w600,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      if (isSelected)
+                                                        Icon(Icons.check_circle, color: AppColors.primary, size: 24.sp),
+                                                    ],
+                                                  ),
+                                                  // Added description handling
+                                                  if (method.description != null &&
+                                                      method.description!.isNotEmpty &&
+                                                      method.paymentType?.toLowerCase() != 'wallet') ...[
+                                                    SizedBox(height: 12.h),
+                                                    InkWell(
+                                                      onTap: () => _handlePaymentDescription(method.description!),
+                                                      child: Container(
+                                                        padding: EdgeInsets.all(12.w),
+                                                        decoration: BoxDecoration(
+                                                          color: AppColors.primary.withOpacity(0.1),
+                                                          borderRadius: BorderRadius.circular(8.r),
+                                                          border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+                                                        ),
+                                                        child: Row(
+                                                          children: [
+                                                            Icon(
+                                                              _isUrl(method.description!)
+                                                                  ? Icons.link
+                                                                  : Icons.content_copy,
+                                                              color: AppColors.primary,
+                                                              size: 16.sp,
+                                                            ),
+                                                            SizedBox(width: 8.w),
+                                                            Expanded(
+                                                              child: Text(
+                                                                method.description!,
+                                                                style: TextStyle(
+                                                                  fontSize: 14.sp,
+                                                                  color: AppColors.primary,
+                                                                  fontWeight: FontWeight.w500,
+                                                                ),
+                                                                maxLines: 2,
+                                                                overflow: TextOverflow.ellipsis,
+                                                              ),
+                                                            ),
+                                                            Icon(
+                                                              Icons.touch_app,
+                                                              color: AppColors.primary,
+                                                              size: 16.sp,
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      }).toList(),
+                                    );
+                                  } else if (state is PaymentMethodsErrorState) {
+                                    return Center(
+                                      child: Text(
+                                        'Failed to load payment methods',
+                                        style: TextStyle(fontSize: 16.sp, color: AppColors.grey[600]),
+                                      ),
+                                    );
+                                  } else {
+                                    return SizedBox();
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Confirm Button
+                        Container(
+                          padding: EdgeInsets.all(16.w),
+                          decoration: BoxDecoration(
+                            color: AppColors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.grey.withOpacity(0.1),
+                                blurRadius: 10,
+                                offset: Offset(0, -2),
+                              ),
+                            ],
+                          ),
+                          child: ElevatedButton(
+                            onPressed: (selectedPaymentMethodId != null &&
+                                (selectedPaymentMethodId == 'Wallet' || base64String != null))
+                                ? () async {
+                              String imageData;
+                              if (selectedPaymentMethodId == 'Wallet') {
+                                imageData = 'wallet';
+                              } else {
+                                if (base64String == null) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Please upload the invoice image'),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                  return;
+                                }
+                                imageData = 'data:image/jpeg;base64,$base64String';
+                              }
+
+                              try {
+                                if (chapter == null) {
+                                  await buyCourseCubit.buyPackage(
+                                    courseId: course.id!,
+                                    paymentMethodId: selectedPaymentMethodId!,
+                                    amount: finalPrice,
+                                    userId: SelectedStudent.studentId,
+                                    duration: course.allPrices?.isNotEmpty == true
+                                        ? course.allPrices!.first.duration ?? 30
+                                        : 30,
+                                    image: imageData,
+                                    promoCode: newPrice != null ? int.tryParse(promoController.text) : null,
+                                  );
+                                } else {
+                                  await buyChapterCubit.buyChapter(
+                                    courseId: course.id!,
+                                    paymentMethodId: selectedPaymentMethodId!,
+                                    amount: finalPrice,
+                                    userId: SelectedStudent.studentId,
+                                    chapterId: chapter.id!,
+                                    duration: chapter.chapterAllPrices?.isNotEmpty == true
+                                        ? chapter.chapterAllPrices!.first.duration ?? 30
+                                        : 30,
+                                    image: imageData,
+                                  );
+                                }
+                              } catch (e) {
+                                showTopSnackBar(
+                                  context,
+                                  'Error confirming purchase: ${e.toString()}',
+                                  AppColors.primaryColor,
+                                );
+                              }
+                            }
+                                : null,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                              padding: EdgeInsets.symmetric(vertical: 16.h),
+                              minimumSize: Size(double.infinity, 50.h),
+                            ),
+                            child: Text(
+                              'Confirm Purchase',
+                              style: TextStyle(
+                                color: AppColors.white,
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
-                          )
-                              .toList(),
-                        ],
+                          ),
+                        ),
                       ],
                     ),
-                  );
-                } else if (state is ChapterDataErrorState) {
-                  return Padding(
-                    padding: EdgeInsets.all(16.w),
-                    child: Text(
-                      'Error loading chapter data: ${state.error}',
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        color: AppColors.red,
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+
+    paymentMethodsCubit.getPaymentMethods(userId: SelectedStudent.studentId);
+  }
+
+  // Helper method to check if string is URL
+  bool _isUrl(String text) {
+    return Uri.tryParse(text) != null &&
+        (text.startsWith('http://') || text.startsWith('https://'));
+  }
+
+  // Helper method to handle payment description (URL or copy)
+  void _handlePaymentDescription(String description) async {
+    if (_isUrl(description)) {
+      // Handle URL
+      try {
+        final uri = Uri.parse(description);
+        final canLaunch = await canLaunchUrl(uri);
+
+        if (canLaunch) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        } else {
+          await launchUrl(
+            uri,
+            mode: LaunchMode.inAppWebView,
+            webViewConfiguration: const WebViewConfiguration(
+              enableJavaScript: true,
+            ),
+          );
+        }
+      } catch (e) {
+        showTopSnackBar(context, 'Failed to open link', AppColors.red);
+      }
+    } else {
+      // Handle copy to clipboard
+      try {
+        await Clipboard.setData(ClipboardData(text: description));
+        showTopSnackBar(context, 'Copied to clipboard', AppColors.green);
+      } catch (e) {
+        showTopSnackBar(context, 'Failed to copy', AppColors.red);
+      }
+    }
+  }
+
+  void _showImageSourceBottomSheet(BuildContext parentContext, StateSetter setModalState) {
+    showModalBottomSheet(
+      context: parentContext,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (context) => Container(
+        padding: EdgeInsets.all(20.w),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Select Image Source',
+              style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 20.h),
+            Row(
+              children: [
+                Expanded(
+                  child: InkWell(
+                    onTap: () => _pickImage(ImageSource.camera, context, setModalState),
+                    child: Container(
+                      padding: EdgeInsets.all(20.w),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      child: Column(
+                        children: [
+                          Icon(Icons.camera_alt, size: 40.sp, color: AppColors.primary),
+                          SizedBox(height: 8.h),
+                          Text('Camera', style: TextStyle(fontSize: 14.sp)),
+                        ],
                       ),
                     ),
-                  );
-                }
-                return const SizedBox();
-              },
+                  ),
+                ),
+                SizedBox(width: 16.w),
+                Expanded(
+                  child: InkWell(
+                    onTap: () => _pickImage(ImageSource.gallery, context, setModalState),
+                    child: Container(
+                      padding: EdgeInsets.all(20.w),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      child: Column(
+                        children: [
+                          Icon(Icons.photo_library, size: 40.sp, color: AppColors.primary),
+                          SizedBox(height: 8.h),
+                          Text('Gallery', style: TextStyle(fontSize: 14.sp)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
+            SizedBox(height: 20.h),
           ],
         ),
       ),
     );
   }
+
+  Future<void> _pickImage(ImageSource source, BuildContext bottomSheetContext, StateSetter setModalState) async {
+    try {
+      Navigator.pop(bottomSheetContext);
+
+      final picker = ImagePicker();
+      final XFile? pickedFile = await picker.pickImage(
+        source: source,
+        maxWidth: 1920,
+        maxHeight: 1080,
+        imageQuality: 85,
+      );
+
+      if (pickedFile != null) {
+        final File imageFile = File(pickedFile.path);
+        final List<int> imageFileBytes = await imageFile.readAsBytes();
+        final String imageBase64 = base64Encode(imageFileBytes);
+
+        setState(() {
+          imageBytes = Uint8List.fromList(imageFileBytes);
+          base64String = imageBase64;
+        });
+
+        setModalState(() {});
+
+        showTopSnackBar(context, 'Payment proof uploaded successfully', AppColors.green);
+      }
+    } catch (e) {
+      showTopSnackBar(context, 'Error selecting image: ${e.toString()}', AppColors.primaryColor);
+    }
+  }
+
+  Color _getPaymentTypeColor(String? type) {
+    switch (type?.toLowerCase()) {
+      case 'phone': return AppColors.green;
+      case 'link': return AppColors.blue;
+      case 'integration': return AppColors.purple;
+      case 'text': return AppColors.orange;
+      case 'wallet': return AppColors.yellow;
+      default: return AppColors.grey[500]!;
+    }
+  }
+
+  String _getPaymentTypeText(String? type) {
+    switch (type?.toLowerCase()) {
+      case 'phone': return 'Phone';
+      case 'link': return 'Link';
+      case 'integration': return 'Online';
+      case 'text': return 'Manual';
+      case 'wallet': return 'Wallet';
+      default: return 'Other';
+    }
+  }
 }
 
+// Course Card Widget
 class CourseCard extends StatefulWidget {
   final CourseEntity course;
   final VoidCallback onTap;
   final VoidCallback onBuy;
 
-  const CourseCard({
-    super.key,
-    required this.course,
-    required this.onTap,
-    required this.onBuy,
-  });
+  const CourseCard({super.key, required this.course, required this.onTap, required this.onBuy});
 
   @override
   State<CourseCard> createState() => _CourseCardState();
@@ -1613,16 +1556,11 @@ class _CourseCardState extends State<CourseCard> with SingleTickerProviderStateM
   @override
   void initState() {
     super.initState();
-    _hoverController = AnimationController(
-      duration: const Duration(milliseconds: 200),
-      vsync: this,
-    );
+    _hoverController = AnimationController(duration: const Duration(milliseconds: 200), vsync: this);
     _scaleAnimation = Tween<double>(begin: 1.0, end: 1.02).animate(
-      CurvedAnimation(parent: _hoverController, curve: Curves.easeInOut),
-    );
+        CurvedAnimation(parent: _hoverController, curve: Curves.easeInOut));
     _elevationAnimation = Tween<double>(begin: 2.0, end: 8.0).animate(
-      CurvedAnimation(parent: _hoverController, curve: Curves.easeInOut),
-    );
+        CurvedAnimation(parent: _hoverController, curve: Curves.easeInOut));
   }
 
   @override
@@ -1691,9 +1629,7 @@ class _CourseCardState extends State<CourseCard> with SingleTickerProviderStateM
               ? Image.network(
             widget.course.courseImage!,
             fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) {
-              return _buildPlaceholderImage();
-            },
+            errorBuilder: (context, error, stackTrace) => _buildPlaceholderImage(),
             loadingBuilder: (context, child, loadingProgress) {
               if (loadingProgress == null) return child;
               return Container(
@@ -1701,8 +1637,7 @@ class _CourseCardState extends State<CourseCard> with SingleTickerProviderStateM
                 child: Center(
                   child: CircularProgressIndicator(
                     value: loadingProgress.expectedTotalBytes != null
-                        ? loadingProgress.cumulativeBytesLoaded /
-                        loadingProgress.expectedTotalBytes!
+                        ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
                         : null,
                     strokeWidth: 2.w,
                     color: AppColors.primary,
@@ -1763,20 +1698,14 @@ class _CourseCardState extends State<CourseCard> with SingleTickerProviderStateM
         if (widget.course.courseDescription != null)
           Text(
             widget.course.courseDescription!,
-            style: TextStyle(
-              fontSize: 14.sp,
-              color: AppColors.grey[600],
-              height: 1.4.h,
-            ),
+            style: TextStyle(fontSize: 14.sp, color: AppColors.grey[600], height: 1.4.h),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
         SizedBox(height: 12.h),
         _buildCourseStats(),
         SizedBox(height: 8.h),
-        if (widget.course.price != null)
-          _buildPriceSection(),
-        SizedBox(height: 8.h),
+        if (widget.course.price != null) _buildPriceSection(),
       ],
     );
   }
@@ -1805,11 +1734,7 @@ class _CourseCardState extends State<CourseCard> with SingleTickerProviderStateM
     );
   }
 
-  Widget _buildStatItem({
-    required IconData icon,
-    required String text,
-    required Color color,
-  }) {
+  Widget _buildStatItem({required IconData icon, required String text, required Color color}) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -1817,11 +1742,7 @@ class _CourseCardState extends State<CourseCard> with SingleTickerProviderStateM
         SizedBox(width: 1.w),
         Text(
           text,
-          style: TextStyle(
-            fontSize: 13.sp,
-            color: color,
-            fontWeight: FontWeight.w500,
-          ),
+          style: TextStyle(fontSize: 13.sp, color: color, fontWeight: FontWeight.w500),
           maxLines: 1,
         ),
       ],
@@ -1839,19 +1760,11 @@ class _CourseCardState extends State<CourseCard> with SingleTickerProviderStateM
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.monetization_on,
-            size: 16.sp,
-            color: AppColors.green,
-          ),
+          Icon(Icons.monetization_on, size: 16.sp, color: AppColors.green),
           SizedBox(width: 4.w),
           Text(
             '${widget.course.price} EGP',
-            style: TextStyle(
-              fontSize: 14.sp,
-              fontWeight: FontWeight.bold,
-              color: AppColors.green,
-            ),
+            style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold, color: AppColors.green),
           ),
         ],
       ),
@@ -1865,11 +1778,7 @@ class _CourseCardState extends State<CourseCard> with SingleTickerProviderStateM
         color: AppColors.primary.withOpacity(0.1),
         shape: BoxShape.circle,
       ),
-      child: Icon(
-        Icons.arrow_forward_ios,
-        size: 16.sp,
-        color: AppColors.primary,
-      ),
+      child: Icon(Icons.arrow_forward_ios, size: 16.sp, color: AppColors.primary),
     );
   }
 }

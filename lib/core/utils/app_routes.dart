@@ -24,5 +24,7 @@ class AppRoutes {
   static String notificationsScreen="notifications_screen";
   static String myCourse="my_course_screen";
   static String splashScreen="splash_screen";
+  static String confirmPasswordCode="confirm_password_code_screen";
+  static String resetPassword="reset_password_screen";
 
 }

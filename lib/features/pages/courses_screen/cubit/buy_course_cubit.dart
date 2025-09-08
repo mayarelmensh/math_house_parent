@@ -3,7 +3,6 @@ import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 import 'package:math_house_parent/core/api/api_manager.dart';
 import 'package:math_house_parent/core/api/end_points.dart';
-
 import '../../../../core/cache/shared_preferences_utils.dart';
 import '../../../../data/models/buy_cource_model.dart';
 import 'buy_course_states.dart';
@@ -21,6 +20,7 @@ class BuyCourseCubit extends Cubit<BuyCourseStates> {
     required double amount,
     required int duration,
     required String image,
+    int? promoCode, // Added optional promoCode parameter
   }) async {
     emit(BuyCourseLoadingState());
     try {
@@ -30,16 +30,16 @@ class BuyCourseCubit extends Cubit<BuyCourseStates> {
         return;
       }
 
-      // تحضير الـ image data بناءً على نوع الدفع
+      // Prepare the image data based on payment type
       String imageData;
       if (image == 'wallet') {
         imageData = 'wallet';
       } else {
-        // إذا كان Base64، تحقق من وجود الـ prefix أو لا
+        // If Base64, check for prefix
         if (image.startsWith('data:image/')) {
-          imageData = image; // الـ prefix موجود بالفعل
+          imageData = image; // Prefix already present
         } else {
-          imageData = 'data:image/jpeg;base64,$image'; // أضف الـ prefix
+          imageData = 'data:image/jpeg;base64,$image'; // Add prefix
         }
       }
 
@@ -51,6 +51,7 @@ class BuyCourseCubit extends Cubit<BuyCourseStates> {
         'user_id': userId,
         'duration': duration,
         'image': imageData,
+        if (promoCode != null) 'promo_code': promoCode, // Include promo_code if provided
       };
 
       // Log the request for debugging

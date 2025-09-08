@@ -3,7 +3,6 @@ import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 import 'package:math_house_parent/core/api/api_manager.dart';
 import 'package:math_house_parent/core/api/end_points.dart';
-
 import '../../../../core/cache/shared_preferences_utils.dart';
 import '../../../../data/models/buy_chapter_model.dart';
 import 'buy_chapter_states.dart';
@@ -22,6 +21,7 @@ class BuyChapterCubit extends Cubit<BuyChapterStates> {
     required dynamic amount,
     required int duration,
     required String image,
+    int? promoCode, // Added optional promoCode parameter
   }) async {
     emit(BuyChapterLoadingState());
     try {
@@ -55,6 +55,7 @@ class BuyChapterCubit extends Cubit<BuyChapterStates> {
         'amount': amount,
         'user_id': userId,
         'image': imageData,
+        if (promoCode != null) 'promo_code': promoCode, // Include promo_code if provided
       };
 
       // Log the request for debugging
@@ -62,7 +63,7 @@ class BuyChapterCubit extends Cubit<BuyChapterStates> {
       print('Headers: {Authorization: Bearer $token}');
 
       final response = await apiManager.postData(
-        endPoint: EndPoints.buyChapter, // تأكد من الـ endpoint الصحيح
+        endPoint: EndPoints.buyChapter,
         body: body,
         options: Options(
           headers: {'Authorization': 'Bearer $token'},

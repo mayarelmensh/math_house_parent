@@ -16,7 +16,7 @@ class LoginCubit extends Cubit<LoginStates>{
   bool isLoading= false;
 
  void login()async{
-   if(formKey.currentState?.validate()==true) {
+
      emit(LoginInitialState());
      var either = await loginUseCase.invoke(email.text, password.text);
      return either.fold((error) {
@@ -45,7 +45,7 @@ class LoginCubit extends Cubit<LoginStates>{
        emit(LoginSuccessState(loginResponseEntity: response));
      });
  }
-  }
+
 
 
   void changePasswordVisibility() {

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:math_house_parent/core/utils/app_routes.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -24,22 +25,28 @@ class _SplashScreenState extends State<SplashScreen>
       duration: const Duration(seconds: 2),
     );
 
-    _scaleAnimation =
-        Tween<double>(begin: 0.5, end: 1.0).animate(CurvedAnimation(
-          parent: _controller,
-          curve: Curves.elasticOut,
-        ));
+    _scaleAnimation = Tween<double>(
+      begin: 0.5,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.elasticOut));
 
-    _fadeAnimation =
-        Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-          parent: _controller,
-          curve: Curves.easeIn,
-        ));
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeIn));
 
     _controller.forward();
 
+    // Navigate directly to loginRoute for testing
     Timer(const Duration(seconds: 3), () {
-      Navigator.pushReplacementNamed(context, "/login");
+      print('SplashScreen: Navigating to ${AppRoutes.loginRoute}');
+      if (mounted) {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          AppRoutes.loginRoute,
+          (Route<dynamic> route) => false,
+        );
+      }
     });
   }
 
@@ -54,17 +61,23 @@ class _SplashScreenState extends State<SplashScreen>
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
-        child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: ScaleTransition(
-            scale: _scaleAnimation,
-            child: Image.asset(
-              "assets/images/logo.png",
-              width: 200.w,
-              height: 200.h,
-              fit: BoxFit.contain,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            FadeTransition(
+              opacity: _fadeAnimation,
+              child: ScaleTransition(
+                scale: _scaleAnimation,
+                child: Image.asset(
+                  "assets/images/logo.png",
+                  width: 300.w,
+                  height: 300.h,
+                  fit: BoxFit.contain,
+                ),
+              ),
             ),
-          ),
+            SizedBox(height: 20.h),
+          ],
         ),
       ),
     );

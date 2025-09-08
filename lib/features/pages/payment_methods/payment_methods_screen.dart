@@ -75,10 +75,8 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
     super.dispose();
   }
 
-  Future<void> pickImage(ImageSource source, BuildContext bottomSheetContext) async {
+  Future<void> pickImage(ImageSource source) async {
     try {
-      Navigator.pop(bottomSheetContext); // Close the image source bottom sheet
-
       final XFile? pickedFile = await _picker.pickImage(
         source: source,
         maxWidth: 1920,
@@ -109,64 +107,70 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
         );
       }
     } catch (e) {
-      showTopSnackBar(context, 'Error selecting image: ${e.toString()}',AppColors.primaryColor);
+      showTopSnackBar(context, 'Error selecting image: ${e.toString()}', AppColors.primaryColor);
     }
   }
 
-  void showImageSourceBottomSheet(BuildContext parentContext) {
+  void showImageSourceBottomSheet() {
     showModalBottomSheet(
-      context: parentContext,
+      context: context,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
       ),
       builder: (context) => Container(
-        padding: EdgeInsets.all(20.w),
+        padding: EdgeInsets.all(16.w),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               'Select Image Source',
               style: TextStyle(
-                fontSize: 18.sp,
+                fontSize: 16.sp,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 20.h),
+            SizedBox(height: 16.h),
             Row(
               children: [
                 Expanded(
                   child: InkWell(
-                    onTap: () => pickImage(ImageSource.camera, context),
+                    onTap: () {
+                      Navigator.pop(context);
+                      pickImage(ImageSource.camera);
+                    },
                     child: Container(
-                      padding: EdgeInsets.all(20.w),
+                      padding: EdgeInsets.all(16.w),
                       decoration: BoxDecoration(
                         border: Border.all(color: Colors.grey.shade300),
-                        borderRadius: BorderRadius.circular(12.r),
+                        borderRadius: BorderRadius.circular(10.r),
                       ),
                       child: Column(
                         children: [
-                          Icon(Icons.camera_alt, size: 40.sp, color: AppColors.primaryColor),
-                          SizedBox(height: 8.h),
+                          Icon(Icons.camera_alt, size: 32.sp, color: AppColors.primaryColor),
+                          SizedBox(height: 6.h),
                           Text('Camera'),
                         ],
                       ),
                     ),
                   ),
                 ),
-                SizedBox(width: 16.w),
+                SizedBox(width: 12.w),
                 Expanded(
                   child: InkWell(
-                    onTap: () => pickImage(ImageSource.gallery, context),
+                    onTap: () {
+                      Navigator.pop(context);
+                      pickImage(ImageSource.gallery);
+                    },
                     child: Container(
-                      padding: EdgeInsets.all(20.w),
+                      padding: EdgeInsets.all(16.w),
                       decoration: BoxDecoration(
                         border: Border.all(color: Colors.grey.shade300),
-                        borderRadius: BorderRadius.circular(12.r),
+                        borderRadius: BorderRadius.circular(10.r),
                       ),
                       child: Column(
                         children: [
-                          Icon(Icons.photo_library, size: 40.sp, color: AppColors.primaryColor),
-                          SizedBox(height: 8.h),
+                          Icon(Icons.photo_library, size: 32.sp, color: AppColors.primaryColor),
+                          SizedBox(height: 6.h),
                           Text('Gallery'),
                         ],
                       ),
@@ -175,517 +179,172 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                 ),
               ],
             ),
-            SizedBox(height: 20.h),
+            SizedBox(height: 16.h),
           ],
         ),
       ),
     );
   }
 
-  void _showPaymentMethodsBottomSheet() {
-    setState(() {
-      imageBytes = null;
-      base64String = null;
-      selectedMethod = null;
-    });
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => MultiBlocProvider(
-        providers: [
-          BlocProvider.value(value: paymentMethodsCubit),
-          BlocProvider.value(value: buyPackageCubit),
-        ],
-        child: BlocListener<BuyPackageCubit, BuyPackageState>(
-          listener: (context, state) {
-            if (state is BuyPackageSuccess) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Package "$packageName" purchased successfully!'),
-                  backgroundColor: AppColors.green,
-                ),
-              );
-              Navigator.pop(context);
-            } else if (state is BuyPackageError) {
-              showTopSnackBar(context, state.message,AppColors.primaryColor);
-            }
-          },
-          child: StatefulBuilder(
-            builder: (BuildContext context, StateSetter bottomSheetSetState) {
-              void confirmPurchase() async {
-                if (selectedMethod == null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Please select a payment method'),
-                      backgroundColor: Colors.orange,
-                    ),
-                  );
-                  return;
-                }
-
-                String imageData;
-
-                if (selectedMethod!.id == 'Wallet') {
-                  imageData = 'wallet';
-                } else {
-                  if (base64String == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Please upload the invoice image'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                    return;
-                  }
-                  imageData = 'data:image/jpeg;base64,$base64String';
-                }
-
-                try {
-                  await buyPackageCubit.buyPackage(
-
-                    packageId: packageId!,
-                    paymentMethodId: selectedMethod!.id!,
-                    // amount: packagePrice ?? 0.0,
-                    userId: SelectedStudent.studentId,
-                    // duration: packageDuration ?? 30,
-                    image: imageData,
-                  );
-                } catch (e) {
-                  showTopSnackBar(context, 'Error confirming purchase: ${e.toString()}',AppColors.primaryColor);
-                }
-              }
-
-              return SizedBox(
-                height: MediaQuery.of(context).size.height * 0.7,
-                child: Material(
-                  color: AppColors.white,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(20.r),
-                    topRight: Radius.circular(20.r),
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  child: Column(
-                    children: [
-                      Container(
-                        width: 40.w,
-                        height: 4.h,
-                        margin: EdgeInsets.only(top: 12.h),
-                        decoration: BoxDecoration(
-                          color: AppColors.grey[300],
-                          borderRadius: BorderRadius.circular(2.r),
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.all(16.w),
-                        child: Text(
-                          'Select Payment Method',
-                          style: TextStyle(
-                            fontSize: 18.sp,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.primaryColor,
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                        child: Column(
-                          children: [
-                            Text(
-                              'Package: $packageName',
-                              style: TextStyle(
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.grey[800],
-                              ),
-                            ),
-                            SizedBox(height: 8.h),
-                            Text(
-                              'Price: \$${packagePrice ?? 0}',
-                              style: TextStyle(
-                                fontSize: 16.sp,
-                                color: AppColors.green,
-                              ),
-                            ),
-                            SizedBox(height: 8.h),
-                            Text(
-                              'Duration: ${packageDuration ?? 30} days',
-                              style: TextStyle(
-                                fontSize: 16.sp,
-                                color: AppColors.grey[700],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      if (selectedMethod?.id != 'Wallet')
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                          child: Column(
-                            children: [
-                              if (imageBytes != null)
-                                Container(
-                                  width: double.infinity,
-                                  height: 150.h,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(12.r),
-                                    color: Colors.grey[200],
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(12.r),
-                                    child: Image.memory(
-                                      imageBytes!,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                )
-                              else
-                                Container(
-                                  width: double.infinity,
-                                  height: 150.h,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(12.r),
-                                    color: Colors.grey[200],
-                                  ),
-                                  child: const Icon(Icons.image, size: 40),
-                                ),
-                              SizedBox(height: 8.h),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: ElevatedButton.icon(
-                                      onPressed: () {
-                                        showImageSourceBottomSheet(context);
-                                      },
-                                      icon: Icon(Icons.upload_file, color: AppColors.white),
-                                      label: Text(
-                                        'Upload Invoice Image',
-                                        style: TextStyle(color: AppColors.white),
-                                      ),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: AppColors.primaryColor,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(12.r),
-                                        ),
-                                        padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
-                                      ),
-                                    ),
-                                  ),
-                                  if (imageBytes != null) ...[
-                                    SizedBox(width: 8.w),
-                                    IconButton(
-                                      onPressed: () {
-                                        setState(() {
-                                          imageBytes = null;
-                                          base64String = null;
-                                        });
-                                        bottomSheetSetState(() {});
-                                      },
-                                      icon: Icon(Icons.delete, color: Colors.red),
-                                      style: IconButton.styleFrom(
-                                        backgroundColor: Colors.red.withOpacity(0.1),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(8.r),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      Expanded(
-                        child: BlocBuilder<PaymentMethodsCubit, PaymentMethodsStates>(
-                          bloc: paymentMethodsCubit,
-                          builder: (context, state) {
-                            if (state is PaymentMethodsLoadingState) {
-                              return Center(
-                                child: CircularProgressIndicator(
-                                  color: AppColors.primaryColor,
-                                ),
-                              );
-                            } else if (state is PaymentMethodsSuccessState) {
-                              final methods = [
-                                _walletPaymentMethod,
-                                ...?state.paymentMethodsResponse.paymentMethods,
-                              ];
-                              return ListView.builder(
-                                padding: EdgeInsets.all(16.w),
-                                itemCount: methods.length,
-                                itemBuilder: (context, index) {
-                                  final method = methods[index];
-                                  final isSelected = selectedMethod?.id == method.id;
-                                  return GestureDetector(
-                                    onTap: () {
-                                      bottomSheetSetState(() {
-                                        selectedMethod = method;
-                                      });
-                                    },
-                                    child: Container(
-                                      margin: EdgeInsets.only(bottom: 16.h),
-                                      decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          colors: isSelected
-                                              ? [
-                                            AppColors.primaryColor.withOpacity(0.3),
-                                            AppColors.primaryColor.withOpacity(0.1)
-                                          ]
-                                              : [AppColors.white, AppColors.grey.shade50],
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                        ),
-                                        borderRadius: BorderRadius.circular(16.r),
-                                        border: Border.all(
-                                          color: isSelected ? AppColors.primaryColor : AppColors.grey[300]!,
-                                          width: isSelected ? 3.w : 1.w,
-                                        ),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: AppColors.grey.withOpacity(isSelected ? 0.3 : 0.15),
-                                            spreadRadius: 1,
-                                            blurRadius: 8,
-                                            offset: Offset(0, 3.h),
-                                          ),
-                                        ],
-                                      ),
-                                      child: Column(
-                                        children: [
-                                          Container(
-                                            padding: EdgeInsets.all(20.w),
-                                            child: Row(
-                                              children: [
-                                                Container(
-                                                  width: 60.w,
-                                                  height: 60.h,
-                                                  decoration: BoxDecoration(
-                                                    borderRadius: BorderRadius.circular(12.r),
-                                                    boxShadow: [
-                                                      BoxShadow(
-                                                        color: AppColors.grey.withOpacity(0.2),
-                                                        spreadRadius: 1,
-                                                        blurRadius: 4,
-                                                        offset: Offset(0, 2.h),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  child: ClipRRect(
-                                                    borderRadius: BorderRadius.circular(12.r),
-                                                    child: method.logo != null && method.logo!.isNotEmpty
-                                                        ? Image.network(
-                                                      method.logo!,
-                                                      fit: BoxFit.cover,
-                                                      errorBuilder: (context, _, __) => Container(
-                                                        color: AppColors.grey.shade200,
-                                                        child: Icon(
-                                                          Icons.payment,
-                                                          color: AppColors.primaryColor,
-                                                        ),
-                                                      ),
-                                                    )
-                                                        : Container(
-                                                      color: AppColors.grey.shade200,
-                                                      child: Icon(
-                                                        method.paymentType?.toLowerCase() == 'wallet'
-                                                            ? Icons.account_balance_wallet
-                                                            : Icons.payment,
-                                                        color: AppColors.primaryColor,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                                SizedBox(width: 16.w),
-                                                Expanded(
-                                                  child: Column(
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                    children: [
-                                                      Text(
-                                                        method.payment ?? "Unknown Payment",
-                                                        style: TextStyle(
-                                                          fontSize: 18.sp,
-                                                          fontWeight: FontWeight.bold,
-                                                          color: isSelected
-                                                              ? AppColors.primaryColor
-                                                              : AppColors.grey[800],
-                                                        ),
-                                                      ),
-                                                      SizedBox(height: 4.h),
-                                                      Container(
-                                                        padding: EdgeInsets.symmetric(
-                                                          horizontal: 12.w,
-                                                          vertical: 4.h,
-                                                        ),
-                                                        decoration: BoxDecoration(
-                                                          color: _getPaymentTypeColor(method.paymentType),
-                                                          borderRadius: BorderRadius.circular(12.r),
-                                                        ),
-                                                        child: Text(
-                                                          _getPaymentTypeText(method.paymentType),
-                                                          style: TextStyle(
-                                                            color: AppColors.white,
-                                                            fontSize: 12.sp,
-                                                            fontWeight: FontWeight.w600,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                if (isSelected)
-                                                  Icon(
-                                                    Icons.check_circle,
-                                                    color: AppColors.primaryColor,
-                                                    size: 24.sp,
-                                                  ),
-                                              ],
-                                            ),
-                                          ),
-                                          if (method.description != null && method.description!.isNotEmpty)
-                                            Container(
-                                              width: double.infinity,
-                                              padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 10.h),
-                                              child: Container(
-                                                padding: EdgeInsets.all(16.w),
-                                                decoration: BoxDecoration(
-                                                  color: AppColors.grey.shade100,
-                                                  borderRadius: BorderRadius.circular(12.r),
-                                                  border: Border.all(color: AppColors.grey.shade200),
-                                                ),
-                                                child: Text(
-                                                  method.description!,
-                                                  style: TextStyle(
-                                                    fontSize: 16.sp,
-                                                    color: AppColors.grey[800],
-                                                    height: 1.4,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          if (method.paymentType?.toLowerCase() == 'phone' && method.description != null)
-                                            Padding(
-                                              padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 10.h),
-                                              child: ElevatedButton.icon(
-                                                onPressed: () async {
-                                                  await Clipboard.setData(ClipboardData(text: method.description!));
-                                                  ScaffoldMessenger.of(context).showSnackBar(
-                                                    const SnackBar(
-                                                      content: Text('Payment number copied to clipboard'),
-                                                      backgroundColor: AppColors.green,
-                                                    ),
-                                                  );
-                                                },
-                                                icon: Icon(Icons.copy, size: 16.sp, color: AppColors.white),
-                                                label: Text(
-                                                  'Copy Payment Number',
-                                                  style: TextStyle(fontSize: 14.sp, color: AppColors.white),
-                                                ),
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor: AppColors.blue,
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius: BorderRadius.circular(8.r),
-                                                  ),
-                                                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                                                ),
-                                              ),
-                                            ),
-                                          if ((method.paymentType?.toLowerCase() == 'link' ||
-                                              method.paymentType?.toLowerCase() == 'integration') &&
-                                              method.description != null)
-                                            Padding(
-                                              padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 10.h),
-                                              child: ElevatedButton.icon(
-                                                onPressed: () async {
-                                                  final url = method.description!;
-                                                  final uri = Uri.tryParse(url);
-
-                                                  if (uri != null) {
-                                                    final canLaunch = await canLaunchUrl(uri);
-
-                                                    if (canLaunch) {
-                                                      // افتح في أبلكيشن خارجي لو متاح
-                                                      await launchUrl(uri, mode: LaunchMode.externalApplication);
-                                                    } else {
-                                                      // لو مفيش، افتحه جوه الأبلكيشن
-                                                      await launchUrl(
-                                                        uri,
-                                                        mode: LaunchMode.inAppWebView,
-                                                        webViewConfiguration: const WebViewConfiguration(
-                                                          enableJavaScript: true,
-                                                        ),
-                                                      );
-                                                    }
-                                                  } else {
-                                                    if (mounted) {
-                                                      ScaffoldMessenger.of(context).showSnackBar(
-                                                        const SnackBar(
-                                                          content: Text('Invalid URL'),
-                                                          backgroundColor: AppColors.red,
-                                                        ),
-                                                      );
-                                                    }
-                                                  }
-                                                }
-                                                ,
-                                                icon: Icon(Icons.link, size: 16.sp, color: AppColors.white),
-                                                label: Text(
-                                                  'Open Payment Link',
-                                                  style: TextStyle(fontSize: 14.sp, color: AppColors.white),
-                                                ),
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor: AppColors.purple,
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius: BorderRadius.circular(8.r),
-                                                  ),
-                                                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                                                ),
-                                              ),
-                                            ),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                },
-                              );
-                            } else if (state is PaymentMethodsErrorState) {
-                              return Center(
-                                child: Text(
-                                  'Failed to load payment methods',
-                                  style: TextStyle(
-                                    fontSize: 16.sp,
-                                    color: AppColors.grey[600],
-                                  ),
-                                ),
-                              );
-                            } else {
-                              return const SizedBox();
-                            }
-                          },
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.all(16.w),
-                        child: CustomElevatedButton(
-                          backgroundColor: AppColors.primaryColor,
-                          textStyle: TextStyle(color: AppColors.white, fontSize: 16.sp, fontWeight: FontWeight.w600),
-                          text: "Confirm Purchase",
-                          onPressed: (selectedMethod != null &&
-                              (selectedMethod!.id == 'Wallet' || base64String != null))
-                              ? confirmPurchase
-                              : null,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
+  Widget _buildCompactPackageInfoCard() {
+    return Container(
+      width: double.infinity,
+      margin: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+      padding: EdgeInsets.all(10.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12.r),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primaryColor.withOpacity(0.08),
+            blurRadius: 8,
+            offset: Offset(0, 2.h),
+            spreadRadius: 0.5,
           ),
-        ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: EdgeInsets.all(6.w),
+            decoration: BoxDecoration(
+              color: AppColors.primaryColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8.r),
+            ),
+            child: Icon(
+              Icons.shopping_bag,
+              color: AppColors.primaryColor,
+              size: 16.sp,
+            ),
+          ),
+          SizedBox(width: 8.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  packageName ?? "N/A",
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primaryColor,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Row(
+                  children: [
+                    Text(
+                      packageModule ?? "N/A",
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: _getModuleColor(packageModule),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    SizedBox(width: 8.w),
+                    Text(
+                      "${packageDuration ?? 0} Days",
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                    SizedBox(width: 8.w),
+                    Text(
+                      "\$${packagePrice ?? 0}",
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: Colors.green.shade600,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
+  }
 
-    paymentMethodsCubit.getPaymentMethods(userId: SelectedStudent.studentId);
+  Widget _buildInfoItem({
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color color,
+  }) {
+    return Column(
+      children: [
+        Container(
+          padding: EdgeInsets.all(6.w),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(6.r),
+          ),
+          child: Icon(icon, color: color, size: 14.sp),
+        ),
+        SizedBox(height: 4.h),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 8.sp,
+            color: Colors.grey.shade600,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        SizedBox(height: 2.h),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 10.sp,
+            color: Colors.black87,
+            fontWeight: FontWeight.bold,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  void confirmPurchase() async {
+    if (selectedMethod == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select a payment method'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    String imageData;
+
+    if (selectedMethod!.id == 'Wallet') {
+      imageData = 'wallet';
+    } else {
+      if (base64String == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please upload the invoice image'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+      imageData = 'data:image/jpeg;base64,$base64String';
+    }
+
+    try {
+      await buyPackageCubit.buyPackage(
+        packageId: packageId!,
+        paymentMethodId: selectedMethod!.id!,
+        userId: SelectedStudent.studentId,
+        image: imageData,
+      );
+    } catch (e) {
+      showTopSnackBar(context, 'Error confirming purchase: ${e.toString()}', AppColors.primaryColor);
+    }
   }
 
   Color _getPaymentTypeColor(String? type) {
@@ -722,186 +381,571 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
     }
   }
 
+  Color _getModuleColor(String? module) {
+    switch (module?.toLowerCase()) {
+      case 'live':
+        return Colors.red.shade500;
+      case 'question':
+        return Colors.blue.shade500;
+      case 'exam':
+        return Colors.purple.shade500;
+      default:
+        return Colors.grey.shade500;
+    }
+  }
+
   Widget _buildPaymentMethodCard(PaymentMethodEntity method) {
     final isSelected = selectedMethod?.id == method.id;
-
     return GestureDetector(
       onTap: () {
-        _showPaymentMethodsBottomSheet();
         setState(() {
           selectedMethod = method;
+          if (method.id == 'Wallet') {
+            imageBytes = null;
+            base64String = null;
+          }
         });
       },
       child: Container(
-        margin: EdgeInsets.only(bottom: 16.h),
+        margin: EdgeInsets.only(bottom: 12.h),
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [AppColors.white, AppColors.grey.shade50],
+            colors: isSelected
+                ? [
+              AppColors.primaryColor.withOpacity(0.15),
+              AppColors.primaryColor.withOpacity(0.05)
+            ]
+                : [AppColors.white, Colors.grey.shade50],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
-          borderRadius: BorderRadius.circular(16.r),
-          border: isSelected ? Border.all(color: AppColors.primaryColor, width: 2.w) : null,
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(
+            color: isSelected ? AppColors.primaryColor : Colors.grey.shade200,
+            width: isSelected ? 1.5.w : 1.w,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.15),
-              spreadRadius: 1,
-              blurRadius: 8,
-              offset: Offset(0, 3.h),
+              color: isSelected
+                  ? AppColors.primaryColor.withOpacity(0.15)
+                  : Colors.grey.withOpacity(0.1),
+              spreadRadius: 0.5,
+              blurRadius: isSelected ? 6 : 3,
+              offset: Offset(0, 2.h),
             ),
           ],
         ),
-        child: Container(
-          padding: EdgeInsets.all(20.w),
-          child: Row(
-            children: [
+        child: Column(
+          children: [
+            Padding(
+              padding: EdgeInsets.all(12.w),
+              child: Row(
+                children: [
+                  Container(
+                    width: 40.w,
+                    height: 40.h,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10.r),
+                      color: Colors.grey.shade100,
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10.r),
+                      child: method.logo != null && method.logo!.isNotEmpty
+                          ? Image.network(
+                        method.logo!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, _, __) => Icon(
+                          Icons.payment,
+                          color: AppColors.primaryColor,
+                          size: 20.sp,
+                        ),
+                      )
+                          : Icon(
+                        method.paymentType?.toLowerCase() == 'wallet'
+                            ? Icons.account_balance_wallet
+                            : Icons.payment,
+                        color: AppColors.primaryColor,
+                        size: 20.sp,
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          method.payment ?? "Unknown Payment",
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.bold,
+                            color: isSelected
+                                ? AppColors.primaryColor
+                                : Colors.black87,
+                          ),
+                        ),
+                        SizedBox(height: 4.h),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 6.w,
+                            vertical: 3.h,
+                          ),
+                          decoration: BoxDecoration(
+                            color: _getPaymentTypeColor(method.paymentType),
+                            borderRadius: BorderRadius.circular(6.r),
+                          ),
+                          child: Text(
+                            _getPaymentTypeText(method.paymentType),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (isSelected)
+                    Container(
+                      padding: EdgeInsets.all(3.w),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryColor,
+                        borderRadius: BorderRadius.circular(10.r),
+                      ),
+                      child: Icon(
+                        Icons.check,
+                        color: Colors.white,
+                        size: 14.sp,
+                      ),
+                    )
+                  else
+                    Container(
+                      width: 20.w,
+                      height: 20.h,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade400),
+                        borderRadius: BorderRadius.circular(10.r),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            if (isSelected && method.description != null && method.description!.isNotEmpty)
               Container(
-                width: 60.w,
-                height: 60.h,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12.r),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.2),
-                      spreadRadius: 1,
-                      blurRadius: 4,
-                      offset: Offset(0, 2.h),
-                    ),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12.r),
-                  child: method.logo != null && method.logo!.isNotEmpty
-                      ? Image.network(
-                    method.logo!,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, _, __) => Container(
-                      color: Colors.grey.shade200,
-                      child: Icon(Icons.payment, color: AppColors.primaryColor),
-                    ),
-                  )
-                      : Container(
-                    color: Colors.grey.shade200,
-                    child: Icon(
-                      method.paymentType?.toLowerCase() == 'wallet'
-                          ? Icons.account_balance_wallet
-                          : Icons.payment,
-                      color: AppColors.primaryColor,
-                    ),
+                width: double.infinity,
+                padding: EdgeInsets.fromLTRB(12.w, 0, 12.w, 12.h),
+                child: Container(
+                  padding: EdgeInsets.all(10.w),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(8.r),
+                    border: Border.all(color: Colors.grey.shade200),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Payment Details:',
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        method.description!,
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          color: Colors.grey.shade800,
+                          height: 1.3,
+                        ),
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if (method.paymentType?.toLowerCase() == 'phone') ...[
+                        SizedBox(height: 6.h),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () async {
+                              await Clipboard.setData(ClipboardData(text: method.description!));
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: const Text('Payment number copied to clipboard'),
+                                  backgroundColor: AppColors.green,
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                            },
+                            icon: Icon(Icons.copy, size: 12.sp, color: AppColors.white),
+                            label: Text(
+                              'Copy Payment Number',
+                              style: TextStyle(fontSize: 11.sp, color: AppColors.white),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.blue,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(6.r),
+                              ),
+                              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+                              minimumSize: Size(0, 28.h),
+                            ),
+                          ),
+                        ),
+                      ],
+                      if (method.paymentType?.toLowerCase() == 'link' ||
+                          method.paymentType?.toLowerCase() == 'integration') ...[
+                        SizedBox(height: 6.h),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () async {
+                              final url = method.description!;
+                              final uri = Uri.tryParse(url);
+
+                              if (uri != null) {
+                                final canLaunch = await canLaunchUrl(uri);
+                                if (canLaunch) {
+                                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                } else {
+                                  await launchUrl(
+                                    uri,
+                                    mode: LaunchMode.inAppWebView,
+                                    webViewConfiguration: const WebViewConfiguration(
+                                      enableJavaScript: true,
+                                    ),
+                                  );
+                                }
+                              } else {
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Invalid URL'),
+                                      backgroundColor: AppColors.red,
+                                    ),
+                                  );
+                                }
+                              }
+                            },
+                            icon: Icon(Icons.link, size: 12.sp, color: AppColors.white),
+                            label: Text(
+                              'Open Payment Link',
+                              style: TextStyle(fontSize: 11.sp, color: AppColors.white),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.purple,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(6.r),
+                              ),
+                              padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+                              minimumSize: Size(0, 28.h),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
               ),
-              SizedBox(width: 16.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      method.payment ?? "Unknown Payment",
-                      style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(height: 4.h),
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
-                      decoration: BoxDecoration(
-                        color: _getPaymentTypeColor(method.paymentType),
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                      child: Text(
-                        _getPaymentTypeText(method.paymentType),
-                        style: TextStyle(
-                          color: AppColors.white,
-                          fontSize: 12.sp,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPaymentProofSection() {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+      padding: EdgeInsets.all(12.w),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Payment Proof',
+            style: TextStyle(
+              fontSize: 14.sp,
+              fontWeight: FontWeight.bold,
+              color: AppColors.grey[800],
+            ),
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            'Upload a screenshot or photo of your payment confirmation',
+            style: TextStyle(
+              fontSize: 11.sp,
+              color: Colors.grey.shade600,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          if (imageBytes != null)
+            Container(
+              width: double.infinity,
+              constraints: BoxConstraints(
+                maxHeight: 100.h,
+              ),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10.r),
+                border: Border.all(color: AppColors.primaryColor),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10.r),
+                child: Image.memory(
+                  imageBytes!,
+                  fit: BoxFit.contain,
+                  width: double.infinity,
                 ),
               ),
-              Icon(
-                Icons.arrow_forward_ios,
-                color: AppColors.primaryColor,
-                size: 20.sp,
+            )
+          else
+            Container(
+              width: double.infinity,
+              height: 80.h,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10.r),
+                color: Colors.grey.shade100,
+                border: Border.all(
+                  color: Colors.grey.shade300,
+                  style: BorderStyle.solid,
+                ),
               ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.cloud_upload_outlined,
+                    size: 28.sp,
+                    color: Colors.grey.shade400,
+                  ),
+                  SizedBox(height: 6.h),
+                  Text(
+                    'No image selected',
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: Colors.grey.shade500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          SizedBox(height: 8.h),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: showImageSourceBottomSheet,
+                  icon: Icon(Icons.upload_file, color: AppColors.white, size: 16.sp),
+                  label: Text(
+                    'Upload Image',
+                    style: TextStyle(
+                      color: AppColors.white,
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.r),
+                    ),
+                    padding: EdgeInsets.symmetric(vertical: 10.h),
+                  ),
+                ),
+              ),
+              if (imageBytes != null) ...[
+                SizedBox(width: 8.w),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(6.r),
+                  ),
+                  child: IconButton(
+                    onPressed: () {
+                      setState(() {
+                        imageBytes = null;
+                        base64String = null;
+                      });
+                    },
+                    icon: Icon(Icons.delete, color: Colors.red, size: 18.sp),
+                  ),
+                ),
+              ],
             ],
           ),
-        ),
+        ],
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => paymentMethodsCubit,
-      child: Scaffold(
-        backgroundColor: AppColors.grey.shade50,
-        appBar: CustomAppBar(title: "Payment Methods"),
-        body: BlocBuilder<PaymentMethodsCubit, PaymentMethodsStates>(
-          bloc: paymentMethodsCubit,
-          builder: (context, state) {
-            if (state is PaymentMethodsLoadingState) {
-              return Center(
-                child: CircularProgressIndicator(
-                  color: AppColors.primaryColor,
-                ),
-              );
-            } else if (state is PaymentMethodsSuccessState) {
-              final methods = [
-                _walletPaymentMethod,
-                ...?state.paymentMethodsResponse.paymentMethods
-              ];
-
-              return Column(
-                children: [
-                  Container(
-                    width: double.infinity,
-                    margin: EdgeInsets.all(16.w),
-                    padding: EdgeInsets.all(16.w),
-                    decoration: BoxDecoration(
-                      color: AppColors.white,
-                      borderRadius: BorderRadius.circular(16.r),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.1),
-                          blurRadius: 8,
-                          offset: Offset(0, 3.h),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          packageName ?? "",
-                          style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
-                        ),
-                        SizedBox(height: 8.h),
-                        Text("Module: ${packageModule ?? ""}"),
-                        Text("Duration: ${packageDuration ?? ""} Days"),
-                        Text("Price: \$${packagePrice ?? ""}"),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child: RefreshIndicator(
-                      onRefresh: () async {
-                        paymentMethodsCubit.getPaymentMethods(userId: SelectedStudent.studentId);
-                      },
-                      child: ListView.builder(
-                        padding: EdgeInsets.all(16.w),
-                        itemCount: methods.length,
-                        itemBuilder: (context, index) => _buildPaymentMethodCard(methods[index]),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: paymentMethodsCubit),
+        BlocProvider.value(value: buyPackageCubit),
+      ],
+      child: BlocListener<BuyPackageCubit, BuyPackageState>(
+        listener: (context, state) {
+          if (state is BuyPackageSuccess) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Package "$packageName" purchased successfully!'),
+                backgroundColor: AppColors.green,
+              ),
+            );
+            Navigator.pop(context);
+          } else if (state is BuyPackageError) {
+            showTopSnackBar(context, state.message, AppColors.primaryColor);
+          }
+        },
+        child: Scaffold(
+          backgroundColor: Colors.grey.shade50,
+          appBar: CustomAppBar(title: "Payment Methods"),
+          body: BlocBuilder<PaymentMethodsCubit, PaymentMethodsStates>(
+            bloc: paymentMethodsCubit,
+            builder: (context, state) {
+              if (state is PaymentMethodsLoadingState) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(
+                        color: AppColors.primaryColor,
                       ),
-                    ),
+                      SizedBox(height: 12.h),
+                      Text(
+                        'Loading payment methods...',
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              );
-            } else {
-              return const SizedBox();
-            }
-          },
+                );
+              } else if (state is PaymentMethodsSuccessState) {
+                final methods = [
+                  _walletPaymentMethod,
+                  ...?state.paymentMethodsResponse.paymentMethods,
+                ];
+                return LayoutBuilder(
+                  builder: (context, constraints) {
+                    return Column(
+                      children: [
+                        _buildCompactPackageInfoCard(),
+                        Expanded(
+                          child: RefreshIndicator(
+                            onRefresh: () async {
+                              paymentMethodsCubit.getPaymentMethods(
+                                  userId: SelectedStudent.studentId);
+                            },
+                            child: ListView.builder(
+                              padding: EdgeInsets.all(12.w),
+                              itemCount: methods.length,
+                              itemBuilder: (context, index) => _buildPaymentMethodCard(methods[index]),
+                            ),
+                          ),
+                        ),
+                        if (selectedMethod != null) ...[
+                          if (selectedMethod?.id != 'Wallet') _buildPaymentProofSection(),
+                          Container(
+                            padding: EdgeInsets.all(12.w),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.withOpacity(0.1),
+                                  spreadRadius: 1,
+                                  blurRadius: 4,
+                                  offset: Offset(0, -2.h),
+                                ),
+                              ],
+                            ),
+                            child: CustomElevatedButton(
+                              backgroundColor: (selectedMethod != null &&
+                                  (selectedMethod!.id == 'Wallet' || base64String != null))
+                                  ? AppColors.primaryColor
+                                  : Colors.grey.shade400,
+                              textStyle: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              text: "Confirm Purchase",
+                              onPressed: (selectedMethod != null &&
+                                  (selectedMethod!.id == 'Wallet' || base64String != null))
+                                  ? confirmPurchase
+                                  : null,
+                            ),
+                          ),
+                        ],
+                      ],
+                    );
+                  },
+                );
+              } else {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.error_outline,
+                        size: 48.sp,
+                        color: Colors.red.shade400,
+                      ),
+                      SizedBox(height: 12.h),
+                      Text(
+                        'Failed to load payment methods',
+                        style: TextStyle(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                      SizedBox(height: 6.h),
+                      Text(
+                        'Please check your connection and try again',
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          color: Colors.grey.shade500,
+                        ),
+                      ),
+                      SizedBox(height: 16.h),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          paymentMethodsCubit.getPaymentMethods(
+                              userId: SelectedStudent.studentId);
+                        },
+                        icon: Icon(Icons.refresh, color: Colors.white, size: 16.sp),
+                        label: Text(
+                          'Retry',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primaryColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10.r),
+                          ),
+                          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+            },
+          ),
         ),
       ),
     );

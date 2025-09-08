@@ -78,7 +78,7 @@ class _CustomSearchFilterBarState extends State<CustomSearchFilterBar> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 48.h,
+      height: 60.h,
       decoration: BoxDecoration(
         color: AppColors.white,
         border: Border.all(color: AppColors.primaryColor, width: 1.w),
@@ -97,7 +97,7 @@ class _CustomSearchFilterBarState extends State<CustomSearchFilterBar> {
           widget.prefixIcon ??
               Icon(
                 Icons.search,
-                color: AppColors.grey[500],
+                color: AppColors.grey[700],
                 size: 20.sp,
               ),
           SizedBox(width: 8.w),
@@ -108,7 +108,7 @@ class _CustomSearchFilterBarState extends State<CustomSearchFilterBar> {
                 hintText: widget.hintText ?? 'Search...',
                 hintStyle: widget.hintStyle ??
                     TextStyle(
-                      color: AppColors.grey[500],
+                      color: AppColors.grey[700],
                       fontSize: widget.fontSize ?? 16.sp,
                     ),
                 border: InputBorder.none,

@@ -602,18 +602,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
             width: double.infinity,
             child: OutlinedButton.icon(
               onPressed: () => _showLogoutDialog(context),
-              icon: const Icon(Icons.logout, color: AppColors.red),
+              icon: const Icon(Icons.logout, color: AppColors.white),
               label: const Text(
                 "Log Out",
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.red,
+                  color: AppColors.white,
                 ),
               ),
               style: OutlinedButton.styleFrom(
+                backgroundColor: AppColors.primaryColor,
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                side: const BorderSide(color: AppColors.red, width: 2),
+                side: const BorderSide(color: AppColors.primaryColor, width: 2),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -772,7 +773,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Navigator.pushNamedAndRemoveUntil(
                 context,
                 AppRoutes.loginRoute,
-                    (route) => false, // دي معناها امسح كل ال stack
+                    (route) => false,
               );
             },
             backgroundColor: AppColors.primaryColor,
