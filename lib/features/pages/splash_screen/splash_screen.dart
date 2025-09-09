@@ -1,7 +1,10 @@
+
+
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:math_house_parent/core/utils/app_routes.dart';
+import '../../../core/utils/app_routes.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -44,7 +47,7 @@ class _SplashScreenState extends State<SplashScreen>
         Navigator.pushNamedAndRemoveUntil(
           context,
           AppRoutes.loginRoute,
-          (Route<dynamic> route) => false,
+              (Route<dynamic> route) => false,
         );
       }
     });

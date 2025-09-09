@@ -334,15 +334,29 @@ class _WalletRechargeScreenState extends State<WalletRechargeScreen> {
                                   onPressed: () async {
                                     final url = method.description!;
                                     final uri = Uri.tryParse(url);
-                                    if (uri != null && await canLaunchUrl(uri)) {
-                                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+
+                                    if (uri != null) {
+                                      final canLaunch = await canLaunchUrl(uri);
+                                      if (canLaunch) {
+                                        await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                      } else {
+                                        await launchUrl(
+                                          uri,
+                                          mode: LaunchMode.inAppWebView,
+                                          webViewConfiguration: const WebViewConfiguration(
+                                            enableJavaScript: true,
+                                          ),
+                                        );
+                                      }
                                     } else {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: Text('Invalid URL', style: TextStyle(fontSize: 14.sp)),
-                                          backgroundColor: AppColors.red,
-                                        ),
-                                      );
+                                      if (mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text('Invalid URL'),
+                                            backgroundColor: AppColors.red,
+                                          ),
+                                        );
+                                      }
                                     }
                                   },
                                   icon: Icon(Icons.link, size: 16.sp, color: AppColors.white),
